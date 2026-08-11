@@ -35,7 +35,7 @@ public class KillTileService extends TileService {
         }
 
         String target = Prefs.getLastTarget(this);
-        if (target == null || target.isBlank() || isUnsafeTarget(target)) {
+        if (isEmpty(target) || isUnsafeTarget(target)) {
             Toast.makeText(this, R.string.no_target, Toast.LENGTH_SHORT).show();
             return;
         }
@@ -46,6 +46,10 @@ public class KillTileService extends TileService {
                 .setData(Uri.parse("package:" + target))
                 .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_NO_ANIMATION);
         launchAndCollapse(details);
+    }
+
+    private boolean isEmpty(String value) {
+        return value == null || value.trim().isEmpty();
     }
 
     private boolean isUnsafeTarget(String packageName) {
@@ -82,7 +86,7 @@ public class KillTileService extends TileService {
 
         boolean enabled = AccessibilityUtils.isServiceEnabled(this);
         String target = Prefs.getLastTarget(this);
-        boolean ready = enabled && target != null && !target.isBlank() && !isUnsafeTarget(target);
+        boolean ready = enabled && !isEmpty(target) && !isUnsafeTarget(target);
 
         tile.setState(ready ? Tile.STATE_ACTIVE : Tile.STATE_INACTIVE);
         tile.setLabel(getString(R.string.tile_label));
