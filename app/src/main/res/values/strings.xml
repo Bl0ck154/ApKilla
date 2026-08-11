@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">ApKilla</string>
+    <string name="tile_label">Kill app</string>
+    <string name="tile_ready">Ready</string>
+    <string name="tile_not_ready">No target</string>
+    <string name="accessibility_service_name">ApKilla automation</string>
+    <string name="accessibility_description">Tracks the foreground app and automates the system Force stop screen when you tap the ApKilla Quick Settings tile.</string>
+    <string name="description">One tap in Quick Settings force-stops the app that was in the foreground before you opened the notification shade. No root, ADB, Shizuku or Tasker.</string>
+    <string name="open_accessibility">1. Enable Accessibility service</string>
+    <string name="add_tile">2. Add Quick Settings tile</string>
+    <string name="note">The Android App info screen may flash briefly while ApKilla presses Force stop and confirms it automatically. The Accessibility permission normally survives a reboot.</string>
+    <string name="accessibility_on">Accessibility: ON</string>
+    <string name="accessibility_off">Accessibility: OFF</string>
+    <string name="last_target">Last app: %1$s</string>
+    <string name="enable_accessibility_first">Enable “ApKilla automation” in Accessibility first.</string>
+    <string name="no_target">No foreground app to kill.</string>
+    <string name="kill_failed">Couldn’t find the Force stop controls on this Android skin.</string>
+    <string name="add_tile_manual">Open Quick Settings edit mode and add the “Kill app” tile manually.</string>
+    <string name="tile_request_done">Tile request sent.</string>
+</resources>
