@@ -20,12 +20,16 @@ public class KillAccessibilityService extends AccessibilityService {
     private static final long REQUEST_TIMEOUT_MS = 10_000L;
     private static final int MAX_RETRIES = 24;
     private static final long RETRY_DELAY_MS = 80L;
+    private static final long TILE_REFRESH_DEBOUNCE_MS = 200L;
+
+    private static volatile boolean connected = false;
 
     private final Handler handler = new Handler(Looper.getMainLooper());
     private final Set<String> homePackages = new HashSet<>();
     private boolean automationScheduled = false;
     private boolean waitingForConfirmation = false;
     private long activeRequestAt = -1L;
+    private long lastTileRefreshAt = 0L;
 
     private static final List<String> FORCE_STOP_TEXTS = Arrays.asList(
             "force stop",
@@ -44,15 +48,28 @@ public class KillAccessibilityService extends AccessibilityService {
             "priverstinai sustabdyti", "wymuś zatrzymanie"
     );
 
+    static boolean isConnected() {
+        return connected;
+    }
+
     @Override
     protected void onServiceConnected() {
         super.onServiceConnected();
+        connected = true;
         refreshHomePackages();
+        Prefs.markNoForegroundTarget(this);
+        requestTileRefresh(true);
     }
 
     @Override
     public void onAccessibilityEvent(AccessibilityEvent event) {
         if (event == null || event.getPackageName() == null) return;
+
+        int type = event.getEventType();
+        if (type != AccessibilityEvent.TYPE_WINDOW_STATE_CHANGED
+                && type != AccessibilityEvent.TYPE_WINDOWS_CHANGED) {
+            return;
+        }
 
         String packageName = event.getPackageName().toString();
         if (Prefs.hasPendingKill(this)) {
@@ -71,13 +88,30 @@ public class KillAccessibilityService extends AccessibilityService {
         automationScheduled = false;
     }
 
+    @Override
+    public boolean onUnbind(Intent intent) {
+        connected = false;
+        Prefs.markNoForegroundTarget(this);
+        requestTileRefresh(true);
+        return super.onUnbind(intent);
+    }
+
+    @Override
+    public void onDestroy() {
+        connected = false;
+        Prefs.markNoForegroundTarget(this);
+        requestTileRefresh(true);
+        super.onDestroy();
+    }
+
     private void trackForegroundPackage(String packageName) {
         if ("com.android.systemui".equals(packageName)) {
-            return; // Notification shade must not replace the app we came from.
+            return; // Notification shade must preserve the app underneath it.
         }
 
         if (packageName.equals(getPackageName()) || isSettingsPackage(packageName) || isHomePackage(packageName)) {
-            Prefs.clearLastTarget(this);
+            Prefs.markNoForegroundTarget(this);
+            requestTileRefresh(false);
             return;
         }
 
@@ -85,7 +119,15 @@ public class KillAccessibilityService extends AccessibilityService {
             return;
         }
 
-        Prefs.setLastTarget(this, packageName);
+        Prefs.setForegroundTarget(this, packageName);
+        requestTileRefresh(false);
+    }
+
+    private void requestTileRefresh(boolean force) {
+        long now = System.currentTimeMillis();
+        if (!force && now - lastTileRefreshAt < TILE_REFRESH_DEBOUNCE_MS) return;
+        lastTileRefreshAt = now;
+        KillTileService.requestRefresh(this);
     }
 
     private void scheduleAutomation() {
@@ -125,7 +167,7 @@ public class KillAccessibilityService extends AccessibilityService {
             }
 
             if (!forceStop.isEnabled()) {
-                finishAutomation(); // Already stopped, nothing else to do.
+                finishAutomation();
                 return;
             }
 
@@ -145,8 +187,6 @@ public class KillAccessibilityService extends AccessibilityService {
             return;
         }
 
-        // Some OEM builds do not show a confirmation dialog. If the Force stop
-        // button is now disabled, the operation already succeeded.
         AccessibilityNodeInfo forceStop = findForceStopButton(root);
         if (forceStop != null && !forceStop.isEnabled()) {
             finishAutomation();
@@ -170,15 +210,19 @@ public class KillAccessibilityService extends AccessibilityService {
 
     private void finishAutomation() {
         Prefs.clearPendingKill(this);
+        Prefs.markNoForegroundTarget(this);
         waitingForConfirmation = false;
         activeRequestAt = -1L;
+        requestTileRefresh(true);
         handler.postDelayed(() -> performGlobalAction(GLOBAL_ACTION_BACK), 220L);
     }
 
     private void failAutomation() {
         Prefs.clearPendingKill(this);
+        Prefs.markNoForegroundTarget(this);
         waitingForConfirmation = false;
         activeRequestAt = -1L;
+        requestTileRefresh(true);
         Toast.makeText(this, R.string.kill_failed, Toast.LENGTH_SHORT).show();
         handler.postDelayed(() -> performGlobalAction(GLOBAL_ACTION_BACK), 150L);
     }
