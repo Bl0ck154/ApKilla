@@ -6,6 +6,7 @@ import android.content.SharedPreferences;
 final class Prefs {
     private static final String FILE = "state";
     private static final String KEY_LAST_TARGET = "last_target";
+    private static final String KEY_TARGET_IS_FOREGROUND = "target_is_foreground";
     private static final String KEY_PENDING_TARGET = "pending_target";
     private static final String KEY_PENDING_AT = "pending_at";
 
@@ -19,12 +20,28 @@ final class Prefs {
         return prefs(context).getString(KEY_LAST_TARGET, null);
     }
 
-    static void setLastTarget(Context context, String packageName) {
-        prefs(context).edit().putString(KEY_LAST_TARGET, packageName).apply();
+    static void setForegroundTarget(Context context, String packageName) {
+        prefs(context).edit()
+                .putString(KEY_LAST_TARGET, packageName)
+                .putBoolean(KEY_TARGET_IS_FOREGROUND, true)
+                .apply();
+    }
+
+    static boolean isTargetForeground(Context context) {
+        return prefs(context).getBoolean(KEY_TARGET_IS_FOREGROUND, false);
+    }
+
+    static void markNoForegroundTarget(Context context) {
+        prefs(context).edit()
+                .putBoolean(KEY_TARGET_IS_FOREGROUND, false)
+                .apply();
     }
 
     static void clearLastTarget(Context context) {
-        prefs(context).edit().remove(KEY_LAST_TARGET).apply();
+        prefs(context).edit()
+                .remove(KEY_LAST_TARGET)
+                .putBoolean(KEY_TARGET_IS_FOREGROUND, false)
+                .apply();
     }
 
     static void requestKill(Context context, String packageName) {
