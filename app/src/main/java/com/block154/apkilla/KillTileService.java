@@ -1,7 +1,10 @@
 package com.block154.apkilla;
 
 import android.app.PendingIntent;
+import android.content.ComponentName;
+import android.content.Context;
 import android.content.Intent;
+import android.graphics.drawable.Icon;
 import android.net.Uri;
 import android.os.Build;
 import android.provider.Settings;
@@ -10,6 +13,24 @@ import android.service.quicksettings.TileService;
 import android.widget.Toast;
 
 public class KillTileService extends TileService {
+
+    static void requestRefresh(Context context) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+            try {
+                TileService.requestListeningState(
+                        context.getApplicationContext(),
+                        new ComponentName(context, KillTileService.class)
+                );
+            } catch (Exception ignored) {
+            }
+        }
+    }
+
+    @Override
+    public void onTileAdded() {
+        super.onTileAdded();
+        updateTile();
+    }
 
     @Override
     public void onStartListening() {
@@ -20,6 +41,7 @@ public class KillTileService extends TileService {
     @Override
     public void onClick() {
         super.onClick();
+        updateTile();
         if (isLocked()) {
             unlockAndRun(this::handleClick);
         } else {
@@ -35,8 +57,9 @@ public class KillTileService extends TileService {
         }
 
         String target = Prefs.getLastTarget(this);
-        if (isEmpty(target) || isUnsafeTarget(target)) {
+        if (isEmpty(target) || isUnsafeTarget(target) || !Prefs.isTargetForeground(this)) {
             Toast.makeText(this, R.string.no_target, Toast.LENGTH_SHORT).show();
+            updateTile();
             return;
         }
 
@@ -85,13 +108,16 @@ public class KillTileService extends TileService {
         if (tile == null) return;
 
         boolean enabled = AccessibilityUtils.isServiceEnabled(this);
-        String target = Prefs.getLastTarget(this);
-        boolean ready = enabled && !isEmpty(target) && !isUnsafeTarget(target);
 
-        tile.setState(ready ? Tile.STATE_ACTIVE : Tile.STATE_INACTIVE);
+        // This tile represents an action, not an on/off setting. Keep it visually
+        // active whenever the automation service is enabled; target availability
+        // is checked only when the user taps it.
+        tile.setState(enabled ? Tile.STATE_ACTIVE : Tile.STATE_INACTIVE);
+        tile.setIcon(Icon.createWithResource(this, R.drawable.ic_kill));
         tile.setLabel(getString(R.string.tile_label));
+        tile.setContentDescription(getString(R.string.tile_label));
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-            tile.setSubtitle(ready ? getString(R.string.tile_ready) : getString(R.string.tile_not_ready));
+            tile.setSubtitle(enabled ? getString(R.string.tile_ready) : getString(R.string.tile_not_ready));
         }
         tile.updateTile();
     }
