@@ -1,1 +1,0 @@
-Trigger signed ApKilla 0.3.2 release.
