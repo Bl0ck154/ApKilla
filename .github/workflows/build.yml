@@ -31,7 +31,7 @@ jobs:
         run: gradle :app:assembleDebug --stacktrace
 
   release:
-    if: github.event_name == 'workflow_dispatch'
+    if: github.event_name == 'push' || github.event_name == 'workflow_dispatch'
     runs-on: ubuntu-latest
     permissions:
       contents: write
@@ -60,7 +60,7 @@ jobs:
         run: |
           set -euo pipefail
           if [ -z "$APKILLA_KEYSTORE_B64" ] || [ -z "$APKILLA_KEYSTORE_PASSWORD" ]; then
-            echo "Missing APKILLA_KEYSTORE_B64 or APKILLA_KEYSTORE_PASSWORD repository secret." >&2
+            echo "Missing release-signing repository secrets." >&2
             exit 1
           fi
           printf '%s' "$APKILLA_KEYSTORE_B64" | base64 --decode > "$RUNNER_TEMP/apkilla-release.jks"
@@ -72,8 +72,7 @@ jobs:
         run: gradle :app:assembleRelease --stacktrace
 
       - name: Verify APK signature
-        run: |
-          "$ANDROID_HOME/build-tools/35.0.0/apksigner" verify --verbose --print-certs app/build/outputs/apk/release/app-release.apk
+        run: "$ANDROID_HOME/build-tools/35.0.0/apksigner" verify --verbose --print-certs app/build/outputs/apk/release/app-release.apk
 
       - name: Prepare release asset
         run: cp app/build/outputs/apk/release/app-release.apk ApKilla-0.3.1-release.apk
@@ -93,7 +92,5 @@ jobs:
           if gh release view "$TAG" >/dev/null 2>&1; then
             gh release upload "$TAG" ApKilla-0.3.1-release.apk --clobber
           else
-            gh release create "$TAG" ApKilla-0.3.1-release.apk \
-              --title "ApKilla 0.3.1" \
-              --notes "Signed release build. Future ApKilla releases use the same permanent signing certificate."
+            gh release create "$TAG" ApKilla-0.3.1-release.apk --title "ApKilla 0.3.1" --notes "Signed release build using the permanent ApKilla signing certificate."
           fi
