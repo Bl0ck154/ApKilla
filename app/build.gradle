@@ -2,6 +2,11 @@ plugins {
     id 'com.android.application'
 }
 
+def releaseKeystorePath = System.getenv('APKILLA_KEYSTORE_PATH')
+def releaseKeystorePassword = System.getenv('APKILLA_KEYSTORE_PASSWORD')
+def hasReleaseSigning = releaseKeystorePath != null && !releaseKeystorePath.trim().isEmpty()
+        && releaseKeystorePassword != null && !releaseKeystorePassword.isEmpty()
+
 android {
     namespace 'com.block154.apkilla'
     compileSdk 35
@@ -10,8 +15,29 @@ android {
         applicationId 'com.block154.apkilla'
         minSdk 24
         targetSdk 35
-        versionCode 3
-        versionName '0.3.0'
+        versionCode 4
+        versionName '0.3.1'
+    }
+
+    signingConfigs {
+        release {
+            if (hasReleaseSigning) {
+                storeFile file(releaseKeystorePath)
+                storePassword releaseKeystorePassword
+                keyAlias 'apkilla'
+                keyPassword releaseKeystorePassword
+            }
+        }
+    }
+
+    buildTypes {
+        release {
+            minifyEnabled false
+            shrinkResources false
+            if (hasReleaseSigning) {
+                signingConfig signingConfigs.release
+            }
+        }
     }
 
     compileOptions {
