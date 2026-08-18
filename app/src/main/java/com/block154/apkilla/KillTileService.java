@@ -29,18 +29,29 @@ public class KillTileService extends TileService {
     @Override
     public void onTileAdded() {
         super.onTileAdded();
+        Prefs.setTileAdded(this, true);
         updateTile();
+    }
+
+    @Override
+    public void onTileRemoved() {
+        Prefs.setTileAdded(this, false);
+        super.onTileRemoved();
     }
 
     @Override
     public void onStartListening() {
         super.onStartListening();
+        // If onStartListening() is called, the tile exists. This also repairs our
+        // local state after an app update or reboot where onTileAdded() is not called.
+        Prefs.setTileAdded(this, true);
         updateTile();
     }
 
     @Override
     public void onClick() {
         super.onClick();
+        Prefs.setTileAdded(this, true);
         updateTile();
         if (isLocked()) {
             unlockAndRun(this::handleClick);
@@ -56,8 +67,8 @@ public class KillTileService extends TileService {
             return;
         }
 
-        String target = Prefs.getLastTarget(this);
-        if (isEmpty(target) || isUnsafeTarget(target) || !Prefs.isTargetForeground(this)) {
+        String target = TargetResolver.resolveForTile(this);
+        if (target == null) {
             Toast.makeText(this, R.string.no_target, Toast.LENGTH_SHORT).show();
             updateTile();
             return;
@@ -69,19 +80,6 @@ public class KillTileService extends TileService {
                 .setData(Uri.parse("package:" + target))
                 .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_NO_ANIMATION);
         launchAndCollapse(details);
-    }
-
-    private boolean isEmpty(String value) {
-        return value == null || value.trim().isEmpty();
-    }
-
-    private boolean isUnsafeTarget(String packageName) {
-        return packageName.equals(getPackageName())
-                || packageName.equals("android")
-                || packageName.equals("com.android.systemui")
-                || packageName.equals("com.android.settings")
-                || packageName.equals("com.oplus.settings")
-                || packageName.equals("com.coloros.settings");
     }
 
     private void launchAndCollapse(Intent intent) {
@@ -109,15 +107,15 @@ public class KillTileService extends TileService {
 
         boolean enabled = AccessibilityUtils.isServiceEnabled(this);
 
-        // This tile represents an action, not an on/off setting. Keep it visually
-        // active whenever the automation service is enabled; target availability
-        // is checked only when the user taps it.
-        tile.setState(enabled ? Tile.STATE_ACTIVE : Tile.STATE_INACTIVE);
+        // This is an action tile, not an on/off switch. Keep it interactable even
+        // while setup is incomplete; tapping it can take the user to Accessibility.
+        // Some OEM SystemUI builds visually over-disable STATE_INACTIVE tiles.
+        tile.setState(Tile.STATE_ACTIVE);
         tile.setIcon(Icon.createWithResource(this, R.drawable.ic_kill));
         tile.setLabel(getString(R.string.tile_label));
         tile.setContentDescription(getString(R.string.tile_label));
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-            tile.setSubtitle(enabled ? getString(R.string.tile_ready) : getString(R.string.tile_not_ready));
+            tile.setSubtitle(enabled ? getString(R.string.tile_ready) : getString(R.string.tile_setup_required));
         }
         tile.updateTile();
     }

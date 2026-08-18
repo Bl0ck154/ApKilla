@@ -1,27 +1,44 @@
 # ApKilla
 
-A tiny Android Quick Settings tile that **force-stops the app you were just using** without root, ADB, Shizuku or Tasker.
+A tiny Android utility that **force-stops the app you were just using** without root, ADB, Shizuku or Tasker.
+
+## Quick access
+
+ApKilla now supports three one-tap entry points:
+
+- **Quick Settings tile** — pull down the notification shade and tap **Kill app**.
+- **Pinned home-screen shortcut** — add **Kill last app** from the redesigned ApKilla screen.
+- **App icon shortcut** — long-press the ApKilla launcher icon and tap **Kill last**.
 
 ## How it works
 
 Android does not let a normal third-party app directly call `force-stop` on another package. ApKilla uses an Accessibility service instead:
 
 1. It remembers the foreground app.
-2. You pull down Quick Settings and tap **Kill app**.
+2. You trigger ApKilla from Quick Settings or a launcher shortcut.
 3. ApKilla opens that package's system **App info** screen.
 4. Accessibility clicks **Force stop** and the confirmation button automatically.
 5. It returns from Settings.
 
-The Settings screen can flash briefly. From the user's side it is still one tap.
+The Settings screen can flash briefly. From the user's side it is still one action.
 
 ## Setup
 
 1. Install the APK and open **ApKilla** once.
-2. Tap **Enable Accessibility service** and enable **ApKilla automation**.
-3. Tap **Add Quick Settings tile** (or add **Kill app** manually from Quick Settings edit mode).
-4. Open any app, pull down Quick Settings, tap **Kill app**.
+2. Enable **ApKilla automation** in Accessibility.
+3. Add the **Kill app** Quick Settings tile.
+4. Optionally pin the **Kill last app** home-screen shortcut.
 
-The Accessibility permission normally remains enabled after a phone reboot, so there is no wireless-debugging pairing or Shizuku startup ritual.
+The redesigned setup rows disappear once Android confirms the corresponding setup step.
+
+## Reliability changes in 0.3.0
+
+- Accessibility service rebinds no longer erase the remembered foreground target.
+- Foreground tracking also listens for window-content changes so it recovers faster after OEM/service lifecycle churn.
+- The Quick Settings tile is always treated as an action tile and remains interactable; readiness is checked when the user taps it.
+- If the foreground flag was briefly lost, a recently tracked safe app can still be used instead of producing a dead tap.
+- Tile presence is remembered from `onTileAdded()`, `onStartListening()` and Android 13+ tile-placement callbacks.
+- The app includes a **Repair / add tile again** action for OEMs that remove a custom tile.
 
 ## Safety / behavior
 
@@ -30,8 +47,8 @@ The Accessibility permission normally remains enabled after a phone reboot, so t
 - No Shizuku.
 - No Internet permission and no network code.
 - Does not try to kill System UI, Settings, the launcher, or ApKilla itself.
-- If you are on the home screen there is deliberately no kill target, so an older app is not killed by accident.
 - A pending kill request expires after 10 seconds.
+- Launcher shortcuts only use a recently tracked app, rather than an arbitrarily old package.
 
 ## OEM compatibility
 

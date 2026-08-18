@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<shortcuts xmlns:android="http://schemas.android.com/apk/res/android">
+    <shortcut
+        android:shortcutId="kill_last"
+        android:enabled="true"
+        android:icon="@drawable/ic_kill"
+        android:shortcutShortLabel="@string/shortcut_kill_short"
+        android:shortcutLongLabel="@string/shortcut_kill_long"
+        android:shortcutDisabledMessage="@string/shortcut_disabled">
+        <intent
+            android:action="android.intent.action.VIEW"
+            android:targetPackage="com.block154.apkilla"
+            android:targetClass="com.block154.apkilla.KillActionActivity" />
+    </shortcut>
+</shortcuts>

@@ -20,7 +20,7 @@ public class KillAccessibilityService extends AccessibilityService {
     private static final long REQUEST_TIMEOUT_MS = 10_000L;
     private static final int MAX_RETRIES = 24;
     private static final long RETRY_DELAY_MS = 80L;
-    private static final long TILE_REFRESH_DEBOUNCE_MS = 200L;
+    private static final long TILE_REFRESH_DEBOUNCE_MS = 250L;
 
     private static volatile boolean connected = false;
 
@@ -57,7 +57,14 @@ public class KillAccessibilityService extends AccessibilityService {
         super.onServiceConnected();
         connected = true;
         refreshHomePackages();
-        Prefs.markNoForegroundTarget(this);
+
+        // Service reconnects are implementation details, not proof that the user
+        // left the foreground app. Keeping the last foreground state avoids a dead
+        // window after OEM/system rebinds the service.
+        long pendingAt = Prefs.getPendingAt(this);
+        if (pendingAt > 0L && System.currentTimeMillis() - pendingAt > REQUEST_TIMEOUT_MS) {
+            Prefs.clearPendingKill(this);
+        }
         requestTileRefresh(true);
     }
 
@@ -67,7 +74,8 @@ public class KillAccessibilityService extends AccessibilityService {
 
         int type = event.getEventType();
         if (type != AccessibilityEvent.TYPE_WINDOW_STATE_CHANGED
-                && type != AccessibilityEvent.TYPE_WINDOWS_CHANGED) {
+                && type != AccessibilityEvent.TYPE_WINDOWS_CHANGED
+                && type != AccessibilityEvent.TYPE_WINDOW_CONTENT_CHANGED) {
             return;
         }
 
@@ -91,7 +99,8 @@ public class KillAccessibilityService extends AccessibilityService {
     @Override
     public boolean onUnbind(Intent intent) {
         connected = false;
-        Prefs.markNoForegroundTarget(this);
+        // Do not clear the foreground target here. Android and OEMs may rebind an
+        // enabled AccessibilityService without the user changing apps.
         requestTileRefresh(true);
         return super.onUnbind(intent);
     }
@@ -99,7 +108,7 @@ public class KillAccessibilityService extends AccessibilityService {
     @Override
     public void onDestroy() {
         connected = false;
-        Prefs.markNoForegroundTarget(this);
+        // Same rationale as onUnbind(): lifecycle churn must not invalidate state.
         requestTileRefresh(true);
         super.onDestroy();
     }

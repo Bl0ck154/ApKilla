@@ -3,19 +3,51 @@
     <string name="app_name">ApKilla</string>
     <string name="tile_label">Kill app</string>
     <string name="tile_ready">Ready</string>
-    <string name="tile_not_ready">No target</string>
+    <string name="tile_setup_required">Setup needed</string>
     <string name="accessibility_service_name">ApKilla automation</string>
-    <string name="accessibility_description">Tracks the foreground app and automates the system Force stop screen when you tap the ApKilla Quick Settings tile.</string>
-    <string name="description">One tap in Quick Settings force-stops the app that was in the foreground before you opened the notification shade. No root, ADB, Shizuku or Tasker.</string>
-    <string name="open_accessibility">1. Enable Accessibility service</string>
-    <string name="add_tile">2. Add Quick Settings tile</string>
-    <string name="note">The Android App info screen may flash briefly while ApKilla presses Force stop and confirms it automatically. The Accessibility permission normally survives a reboot.</string>
-    <string name="accessibility_on">Accessibility: ON</string>
-    <string name="accessibility_off">Accessibility: OFF</string>
-    <string name="last_target">Last app: %1$s</string>
+    <string name="accessibility_description">Tracks the foreground app and automates the system Force stop screen when you trigger ApKilla.</string>
+
+    <string name="hero_subtitle">One-tap app killer</string>
+    <string name="hero_description">Force-stop the app you were just using from Quick Settings, a home-screen shortcut, or the ApKilla icon menu. No root, ADB, Shizuku or Tasker.</string>
+    <string name="badge_ready">READY</string>
+    <string name="badge_setup">SETUP</string>
+
+    <string name="section_status">STATUS</string>
+    <string name="section_setup">SETUP</string>
+    <string name="section_quick_access">QUICK ACCESS</string>
+    <string name="status_automation">Automation</string>
+    <string name="status_quick_settings">Quick Settings</string>
+    <string name="status_last_app">Last app</string>
+    <string name="status_checking">Checking…</string>
+    <string name="status_on">On</string>
+    <string name="status_enabled_reconnecting">Enabled · reconnecting</string>
+    <string name="status_off">Needs setup</string>
+    <string name="status_added">Added</string>
+    <string name="status_not_confirmed">Not confirmed</string>
+
+    <string name="action_enable_automation">Enable automation</string>
+    <string name="action_enable_automation_desc">One-time Accessibility permission. This row disappears after it is enabled.</string>
+    <string name="action_add_tile">Add Quick Settings tile</string>
+    <string name="action_add_tile_desc">Put “Kill app” in the notification shade. This row disappears after Android confirms it.</string>
+    <string name="action_pin_shortcut">Pin home-screen shortcut</string>
+    <string name="action_pin_shortcut_desc">A one-tap “Kill last app” icon on your launcher.</string>
+    <string name="action_repair_tile">Repair / add tile again</string>
+    <string name="action_repair_tile_desc">Use this if your phone removed the Quick Settings tile or it vanished after an update.</string>
+    <string name="action_accessibility_settings">Accessibility settings</string>
+    <string name="action_accessibility_settings_desc">Open the system page for ApKilla automation.</string>
+
+    <string name="note">Android may briefly show the App info screen while ApKilla presses Force stop and confirms it automatically. The tile is now kept as an action button instead of being visually disabled during temporary service state changes.</string>
     <string name="enable_accessibility_first">Enable “ApKilla automation” in Accessibility first.</string>
-    <string name="no_target">No foreground app to kill.</string>
+    <string name="no_target">No recent app to kill yet.</string>
+    <string name="no_recent_target">No recent app found. Open the app you want to stop first.</string>
     <string name="kill_failed">Couldn’t find the Force stop controls on this Android skin.</string>
     <string name="add_tile_manual">Open Quick Settings edit mode and add the “Kill app” tile manually.</string>
-    <string name="tile_request_done">Tile request sent.</string>
+    <string name="tile_ready_to_use">Quick Settings tile is ready.</string>
+    <string name="tile_request_failed">Android couldn’t add the tile right now.</string>
+
+    <string name="shortcut_kill_short">Kill last</string>
+    <string name="shortcut_kill_long">Kill last app</string>
+    <string name="shortcut_disabled">ApKilla shortcut is unavailable.</string>
+    <string name="shortcut_request_sent">Shortcut request sent.</string>
+    <string name="shortcut_not_supported">Your launcher doesn’t support pinning this shortcut.</string>
 </resources>
