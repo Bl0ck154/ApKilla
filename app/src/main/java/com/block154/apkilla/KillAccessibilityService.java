@@ -58,9 +58,6 @@ public class KillAccessibilityService extends AccessibilityService {
         connected = true;
         refreshHomePackages();
 
-        // Service reconnects are implementation details, not proof that the user
-        // left the foreground app. Keeping the last foreground state avoids a dead
-        // window after OEM/system rebinds the service.
         long pendingAt = Prefs.getPendingAt(this);
         if (pendingAt > 0L && System.currentTimeMillis() - pendingAt > REQUEST_TIMEOUT_MS) {
             Prefs.clearPendingKill(this);
@@ -87,6 +84,14 @@ public class KillAccessibilityService extends AccessibilityService {
             return;
         }
 
+        // Content-change events can come from embedded/background components and
+        // are not reliable evidence that their package became the foreground app.
+        // Keep receiving them for Settings automation above, but never let them
+        // replace the kill target.
+        if (type == AccessibilityEvent.TYPE_WINDOW_CONTENT_CHANGED) {
+            return;
+        }
+
         trackForegroundPackage(packageName);
     }
 
@@ -99,8 +104,6 @@ public class KillAccessibilityService extends AccessibilityService {
     @Override
     public boolean onUnbind(Intent intent) {
         connected = false;
-        // Do not clear the foreground target here. Android and OEMs may rebind an
-        // enabled AccessibilityService without the user changing apps.
         requestTileRefresh(true);
         return super.onUnbind(intent);
     }
@@ -108,17 +111,33 @@ public class KillAccessibilityService extends AccessibilityService {
     @Override
     public void onDestroy() {
         connected = false;
-        // Same rationale as onUnbind(): lifecycle churn must not invalidate state.
         requestTileRefresh(true);
         super.onDestroy();
     }
 
     private void trackForegroundPackage(String packageName) {
         if ("com.android.systemui".equals(packageName)) {
-            return; // Notification shade must preserve the app underneath it.
+            return;
         }
 
-        if (packageName.equals(getPackageName()) || isSettingsPackage(packageName) || isHomePackage(packageName)) {
+        if (isHomePackage(packageName)) {
+            // This is the only moment when the launcher shortcut snapshot is
+            // created: the app that was genuinely foreground immediately before
+            // Android switched to Home.
+            Prefs.captureTargetBeforeHome(this);
+            Prefs.markNoForegroundTarget(this);
+            requestTileRefresh(false);
+            return;
+        }
+
+        if (isSettingsPackage(packageName)) {
+            Prefs.clearLastHomeTarget(this);
+            Prefs.markNoForegroundTarget(this);
+            requestTileRefresh(false);
+            return;
+        }
+
+        if (packageName.equals(getPackageName())) {
             Prefs.markNoForegroundTarget(this);
             requestTileRefresh(false);
             return;
