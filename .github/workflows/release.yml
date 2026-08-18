@@ -1,0 +1,67 @@
+name: Signed Release APK
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+  workflow_dispatch:
+
+jobs:
+  build-release:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - uses: android-actions/setup-android@v3
+
+      - name: Install Android SDK 35
+        run: sdkmanager "platforms;android-35" "build-tools;35.0.0"
+
+      - uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '8.9'
+
+      - name: Restore signing key
+        env:
+          KEYSTORE_B64: ${{ secrets.APKILLA_KEYSTORE_B64 }}
+          KEYSTORE_PASSWORD: ${{ secrets.APKILLA_KEYSTORE_PASSWORD }}
+        run: |
+          test -n "$KEYSTORE_B64"
+          test -n "$KEYSTORE_PASSWORD"
+          printf '%s' "$KEYSTORE_B64" | base64 --decode > "$RUNNER_TEMP/apkilla-release.jks"
+
+      - name: Build release APK
+        env:
+          APKILLA_KEYSTORE_PATH: ${{ runner.temp }}/apkilla-release.jks
+          APKILLA_KEYSTORE_PASSWORD: ${{ secrets.APKILLA_KEYSTORE_PASSWORD }}
+        run: gradle :app:assembleRelease --stacktrace
+
+      - name: Verify signing certificate
+        run: "$ANDROID_HOME/build-tools/35.0.0/apksigner" verify --verbose --print-certs app/build/outputs/apk/release/app-release.apk
+
+      - name: Rename APK
+        run: cp app/build/outputs/apk/release/app-release.apk ApKilla-0.3.1-release.apk
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: ApKilla-0.3.1-release
+          path: ApKilla-0.3.1-release.apk
+
+      - name: Publish v0.3.1
+        if: ${{ github.event_name == 'push' }}
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          if gh release view v0.3.1 >/dev/null 2>&1; then
+            gh release upload v0.3.1 ApKilla-0.3.1-release.apk --clobber
+          else
+            gh release create v0.3.1 ApKilla-0.3.1-release.apk --title "ApKilla 0.3.1" --notes "Signed release build using the permanent ApKilla signing certificate."
+          fi
