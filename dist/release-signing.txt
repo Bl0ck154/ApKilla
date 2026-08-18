@@ -1,0 +1,17 @@
+Verifies
+Verified using v1 scheme (JAR signing): false
+Verified using v2 scheme (APK Signature Scheme v2): true
+Verified using v3 scheme (APK Signature Scheme v3): false
+Verified using v3.1 scheme (APK Signature Scheme v3.1): false
+Verified using v4 scheme (APK Signature Scheme v4): false
+Verified for SourceStamp: false
+Number of signers: 1
+Signer #1 certificate DN: CN=ApKilla, OU=Personal, O=Bl0ck154, L=Vilnius, C=LT
+Signer #1 certificate SHA-256 digest: 9dcc58ef2da758659aa29861d6d7baacc17cfcdd970a07b5fc7455e1feac1cfa
+Signer #1 certificate SHA-1 digest: d7a7e71e586a0617c530a19b0886a7c766933a1a
+Signer #1 certificate MD5 digest: 738fb1f7710a2581412f46ee75f42ab7
+Signer #1 key algorithm: RSA
+Signer #1 key size (bits): 4096
+Signer #1 public key SHA-256 digest: 9fe878175a507e86b789c13856e0185c8445caf6cb2fe8a6db5b1391e28f2b54
+Signer #1 public key SHA-1 digest: 7d1d0d885b22f8bcb8a45953bb7a0b3bf21be16f
+Signer #1 public key MD5 digest: 06bd9557b4097d215578e65b24446fef
