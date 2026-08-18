@@ -31,21 +31,38 @@ jobs:
           gradle-version: '8.9'
 
       - name: Build debug APK
-        run: gradle :app:assembleDebug --stacktrace
+        shell: bash
+        run: |
+          set -o pipefail
+          gradle :app:assembleDebug --stacktrace 2>&1 | tee build.log
 
       - uses: actions/upload-artifact@v4
+        if: success()
         with:
           name: ApKilla-debug
           path: app/build/outputs/apk/debug/app-debug.apk
 
-      - name: Publish requested APK build
-        if: github.event_name == 'push' && contains(github.event.head_commit.message, '[publish apk]')
-        env:
-          GH_TOKEN: ${{ github.token }}
+      - name: Persist requested build result
+        if: always() && github.event_name == 'push' && contains(github.event.head_commit.message, '[publish apk]')
+        shell: bash
         run: |
-          APK="ApKilla-0.3.0-debug.apk"
-          TAG="apk-${GITHUB_SHA::7}"
-          cp app/build/outputs/apk/debug/app-debug.apk "$APK"
-          gh release create "$TAG" "$APK" \
-            --title "ApKilla 0.3.0 debug build" \
-            --notes "Installable debug APK built automatically from commit $GITHUB_SHA."
+          mkdir -p dist
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+          if [ -f app/build/outputs/apk/debug/app-debug.apk ]; then
+            cp app/build/outputs/apk/debug/app-debug.apk dist/ApKilla-0.3.0-debug.apk
+            rm -f dist/build-error.txt
+            MESSAGE="Publish ApKilla 0.3.0 APK [skip ci]"
+          else
+            cp build.log dist/build-error.txt 2>/dev/null || echo "Build failed before Gradle produced a log." > dist/build-error.txt
+            rm -f dist/ApKilla-0.3.0-debug.apk
+            MESSAGE="Record ApKilla build failure [skip ci]"
+          fi
+
+          git add dist
+          if git diff --cached --quiet; then
+            exit 0
+          fi
+          git commit -m "$MESSAGE"
+          git push
