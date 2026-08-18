@@ -8,6 +8,8 @@ final class Prefs {
     private static final String KEY_LAST_TARGET = "last_target";
     private static final String KEY_LAST_TARGET_AT = "last_target_at";
     private static final String KEY_TARGET_IS_FOREGROUND = "target_is_foreground";
+    private static final String KEY_LAST_HOME_TARGET = "last_home_target";
+    private static final String KEY_LAST_HOME_TARGET_AT = "last_home_target_at";
     private static final String KEY_PENDING_TARGET = "pending_target";
     private static final String KEY_PENDING_AT = "pending_at";
     private static final String KEY_TILE_ADDED = "tile_added";
@@ -41,6 +43,35 @@ final class Prefs {
     static boolean isTargetRecent(Context context, long maxAgeMs) {
         long lastSeen = getLastTargetAt(context);
         return lastSeen > 0L && System.currentTimeMillis() - lastSeen <= maxAgeMs;
+    }
+
+    static void captureTargetBeforeHome(Context context) {
+        SharedPreferences state = prefs(context);
+        if (!state.getBoolean(KEY_TARGET_IS_FOREGROUND, false)) return;
+
+        String target = state.getString(KEY_LAST_TARGET, null);
+        if (target == null || target.trim().isEmpty()) return;
+
+        state.edit()
+                .putString(KEY_LAST_HOME_TARGET, target)
+                .putLong(KEY_LAST_HOME_TARGET_AT, System.currentTimeMillis())
+                .apply();
+    }
+
+    static String getLastHomeTarget(Context context) {
+        return prefs(context).getString(KEY_LAST_HOME_TARGET, null);
+    }
+
+    static boolean isLastHomeTargetRecent(Context context, long maxAgeMs) {
+        long capturedAt = prefs(context).getLong(KEY_LAST_HOME_TARGET_AT, 0L);
+        return capturedAt > 0L && System.currentTimeMillis() - capturedAt <= maxAgeMs;
+    }
+
+    static void clearLastHomeTarget(Context context) {
+        prefs(context).edit()
+                .remove(KEY_LAST_HOME_TARGET)
+                .remove(KEY_LAST_HOME_TARGET_AT)
+                .apply();
     }
 
     static void markNoForegroundTarget(Context context) {
