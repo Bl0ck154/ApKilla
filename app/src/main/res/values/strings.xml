@@ -30,7 +30,7 @@
     <string name="action_add_tile">Add Quick Settings tile</string>
     <string name="action_add_tile_desc">Put “Kill app” in the notification shade. This row disappears after Android confirms it.</string>
     <string name="action_pin_shortcut">Pin home-screen shortcut</string>
-    <string name="action_pin_shortcut_desc">A one-tap “Kill last app” icon on your launcher.</string>
+    <string name="action_pin_shortcut_desc">Kills only the app you just left when returning to Home.</string>
     <string name="action_repair_tile">Repair / add tile again</string>
     <string name="action_repair_tile_desc">Use this if your phone removed the Quick Settings tile or it vanished after an update.</string>
     <string name="action_accessibility_settings">Accessibility settings</string>
@@ -40,13 +40,14 @@
     <string name="enable_accessibility_first">Enable “ApKilla automation” in Accessibility first.</string>
     <string name="no_target">No recent app to kill yet.</string>
     <string name="no_recent_target">No recent app found. Open the app you want to stop first.</string>
+    <string name="no_home_target">No safe previous app found. Open an app, then return Home and try again.</string>
     <string name="kill_failed">Couldn’t find the Force stop controls on this Android skin.</string>
     <string name="add_tile_manual">Open Quick Settings edit mode and add the “Kill app” tile manually.</string>
     <string name="tile_ready_to_use">Quick Settings tile is ready.</string>
     <string name="tile_request_failed">Android couldn’t add the tile right now.</string>
 
     <string name="shortcut_kill_short">Kill last</string>
-    <string name="shortcut_kill_long">Kill last app</string>
+    <string name="shortcut_kill_long">Kill previous app</string>
     <string name="shortcut_disabled">ApKilla shortcut is unavailable.</string>
     <string name="shortcut_request_sent">Shortcut request sent.</string>
     <string name="shortcut_not_supported">Your launcher doesn’t support pinning this shortcut.</string>
