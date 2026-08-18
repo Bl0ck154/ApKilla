@@ -33,7 +33,9 @@ jobs:
         env:
           KEYSTORE_B64: ${{ secrets.APKILLA_KEYSTORE_B64 }}
           KEYSTORE_PASSWORD: ${{ secrets.APKILLA_KEYSTORE_PASSWORD }}
+        shell: bash
         run: |
+          set -euo pipefail
           test -n "$KEYSTORE_B64"
           test -n "$KEYSTORE_PASSWORD"
           printf '%s' "$KEYSTORE_B64" | base64 --decode > "$RUNNER_TEMP/apkilla-release.jks"
@@ -42,10 +44,19 @@ jobs:
         env:
           APKILLA_KEYSTORE_PATH: ${{ runner.temp }}/apkilla-release.jks
           APKILLA_KEYSTORE_PASSWORD: ${{ secrets.APKILLA_KEYSTORE_PASSWORD }}
-        run: gradle :app:assembleRelease --stacktrace
+        shell: bash
+        run: |
+          set -o pipefail
+          gradle :app:assembleRelease --stacktrace 2>&1 | tee build.log
 
-      - name: Verify signing certificate
-        run: "$ANDROID_HOME/build-tools/35.0.0/apksigner" verify --verbose --print-certs app/build/outputs/apk/release/app-release.apk
+      - name: Verify permanent signing certificate
+        shell: bash
+        run: |
+          set -euo pipefail
+          set -o pipefail
+          "$ANDROID_HOME/build-tools/35.0.0/apksigner" verify --verbose --print-certs app/build/outputs/apk/release/app-release.apk 2>&1 | tee signing.txt
+          grep -qi '9dcc58ef2da758659aa29861d6d7baacc17cfcdd970a07b5fc7455e1feac1cfa' signing.txt
+          touch "$RUNNER_TEMP/apkilla-signing-ok"
 
       - name: Rename APK
         run: cp app/build/outputs/apk/release/app-release.apk ApKilla-0.3.1-release.apk
@@ -59,9 +70,38 @@ jobs:
         if: ${{ github.event_name == 'push' }}
         env:
           GH_TOKEN: ${{ github.token }}
+        shell: bash
         run: |
+          set -euo pipefail
           if gh release view v0.3.1 >/dev/null 2>&1; then
             gh release upload v0.3.1 ApKilla-0.3.1-release.apk --clobber
           else
             gh release create v0.3.1 ApKilla-0.3.1-release.apk --title "ApKilla 0.3.1" --notes "Signed release build using the permanent ApKilla signing certificate."
           fi
+
+      - name: Persist release diagnostics
+        if: ${{ always() && github.event_name == 'push' }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p dist
+          cp build.log dist/release-build.log 2>/dev/null || true
+          cp signing.txt dist/release-signing.txt 2>/dev/null || true
+
+          if [ -f app/build/outputs/apk/release/app-release.apk ] && [ -f "$RUNNER_TEMP/apkilla-signing-ok" ]; then
+            cp app/build/outputs/apk/release/app-release.apk dist/ApKilla-0.3.1-release.apk
+            printf 'SUCCESS\n' > dist/release-build-status.txt
+          else
+            rm -f dist/ApKilla-0.3.1-release.apk
+            printf 'FAILED\n' > dist/release-build-status.txt
+          fi
+
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add dist
+          if git diff --cached --quiet; then
+            exit 0
+          fi
+          git commit -m "Persist ApKilla 0.3.1 release result [skip ci]"
+          git pull --rebase origin main
+          git push origin HEAD:main
