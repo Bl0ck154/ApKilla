@@ -4,7 +4,7 @@ import android.content.Context;
 
 final class TargetResolver {
     private static final long TILE_RECENT_FALLBACK_MS = 15 * 60 * 1000L;
-    static final long SHORTCUT_RECENT_FALLBACK_MS = 30 * 60 * 1000L;
+    static final long SHORTCUT_HOME_TARGET_MAX_AGE_MS = 5 * 60 * 1000L;
 
     private TargetResolver() {}
 
@@ -20,10 +20,12 @@ final class TargetResolver {
         return Prefs.isTargetRecent(context, TILE_RECENT_FALLBACK_MS) ? target : null;
     }
 
-    static String resolveRecent(Context context, long maxAgeMs) {
-        String target = validLastTarget(context);
-        if (target == null) return null;
-        return Prefs.isTargetForeground(context) || Prefs.isTargetRecent(context, maxAgeMs)
+    static String resolveLastBeforeHome(Context context) {
+        String target = Prefs.getLastHomeTarget(context);
+        if (target == null || target.trim().isEmpty() || isUnsafeTarget(context, target)) {
+            return null;
+        }
+        return Prefs.isLastHomeTargetRecent(context, SHORTCUT_HOME_TARGET_MAX_AGE_MS)
                 ? target
                 : null;
     }
