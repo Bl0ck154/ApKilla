@@ -12,6 +12,11 @@ final class TargetResolver {
         String target = validLastTarget(context);
         if (target == null) return null;
         if (Prefs.isTargetForeground(context)) return target;
+
+        // Preserve the old safety behavior while the Accessibility service is
+        // healthy: home/settings explicitly invalidate the foreground target.
+        // Only fall back to a recent target during a real service disconnect/rebind.
+        if (KillAccessibilityService.isConnected()) return null;
         return Prefs.isTargetRecent(context, TILE_RECENT_FALLBACK_MS) ? target : null;
     }
 
