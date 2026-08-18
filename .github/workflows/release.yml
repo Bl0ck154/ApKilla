@@ -11,7 +11,7 @@ on:
 
 jobs:
   build-release:
-    if: ${{ github.event_name != 'issues' || github.event.issue.title == '[build] ApKilla 0.3.1 signed release' }}
+    if: ${{ github.event_name != 'issues' || github.event.issue.title == '[build] ApKilla 0.3.2 signed release' }}
     runs-on: ubuntu-latest
     permissions:
       contents: write
@@ -62,24 +62,24 @@ jobs:
           touch "$RUNNER_TEMP/apkilla-signing-ok"
 
       - name: Rename APK
-        run: cp app/build/outputs/apk/release/app-release.apk ApKilla-0.3.1-release.apk
+        run: cp app/build/outputs/apk/release/app-release.apk ApKilla-0.3.2-release.apk
 
       - uses: actions/upload-artifact@v4
         with:
-          name: ApKilla-0.3.1-release
-          path: ApKilla-0.3.1-release.apk
+          name: ApKilla-0.3.2-release
+          path: ApKilla-0.3.2-release.apk
 
-      - name: Publish v0.3.1
+      - name: Publish v0.3.2
         if: ${{ github.event_name == 'push' || github.event_name == 'issues' || github.event_name == 'workflow_dispatch' }}
         env:
           GH_TOKEN: ${{ github.token }}
         shell: bash
         run: |
           set -euo pipefail
-          if gh release view v0.3.1 >/dev/null 2>&1; then
-            gh release upload v0.3.1 ApKilla-0.3.1-release.apk --clobber
+          if gh release view v0.3.2 >/dev/null 2>&1; then
+            gh release upload v0.3.2 ApKilla-0.3.2-release.apk --clobber
           else
-            gh release create v0.3.1 ApKilla-0.3.1-release.apk --title "ApKilla 0.3.1" --notes "Signed release build using the permanent ApKilla signing certificate."
+            gh release create v0.3.2 ApKilla-0.3.2-release.apk --title "ApKilla 0.3.2" --notes "Fixes Kill last targeting by using only the app captured immediately before returning Home. Signed with the permanent ApKilla certificate."
           fi
 
       - name: Persist release diagnostics
@@ -92,10 +92,10 @@ jobs:
           cp signing.txt dist/release-signing.txt 2>/dev/null || true
 
           if [ -f app/build/outputs/apk/release/app-release.apk ] && [ -f "$RUNNER_TEMP/apkilla-signing-ok" ]; then
-            cp app/build/outputs/apk/release/app-release.apk dist/ApKilla-0.3.1-release.apk
+            cp app/build/outputs/apk/release/app-release.apk dist/ApKilla-0.3.2-release.apk
             printf 'SUCCESS\n' > dist/release-build-status.txt
           else
-            rm -f dist/ApKilla-0.3.1-release.apk
+            rm -f dist/ApKilla-0.3.2-release.apk
             printf 'FAILED\n' > dist/release-build-status.txt
           fi
 
@@ -105,6 +105,6 @@ jobs:
           if git diff --cached --quiet; then
             exit 0
           fi
-          git commit -m "Persist ApKilla 0.3.1 release result [skip ci]"
+          git commit -m "Persist ApKilla 0.3.2 release result [skip ci]"
           git pull --rebase origin main
           git push origin HEAD:main
