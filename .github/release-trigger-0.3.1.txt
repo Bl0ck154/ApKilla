@@ -1,0 +1,1 @@
+Trigger signed ApKilla 0.3.1 release on 2026-08-18.
