@@ -7,6 +7,9 @@ on:
     branches: [ main ]
   workflow_dispatch:
 
+permissions:
+  contents: write
+
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -34,3 +37,15 @@ jobs:
         with:
           name: ApKilla-debug
           path: app/build/outputs/apk/debug/app-debug.apk
+
+      - name: Publish requested APK build
+        if: github.event_name == 'push' && contains(github.event.head_commit.message, '[publish apk]')
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          APK="ApKilla-0.3.0-debug.apk"
+          TAG="apk-${GITHUB_SHA::7}"
+          cp app/build/outputs/apk/debug/app-debug.apk "$APK"
+          gh release create "$TAG" "$APK" \
+            --title "ApKilla 0.3.0 debug build" \
+            --notes "Installable debug APK built automatically from commit $GITHUB_SHA."
