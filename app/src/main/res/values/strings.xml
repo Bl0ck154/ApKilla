@@ -40,4 +40,5 @@
     <string name="add_tile_manual">Open Quick Settings edit mode and add the “Kill app” tile manually.</string>
     <string name="tile_ready_to_use">Quick Settings tile is ready.</string>
     <string name="tile_request_failed">Android couldn’t add the tile right now.</string>
+    <string name="shortcut_removed">Kill last was removed.</string>
 </resources>
