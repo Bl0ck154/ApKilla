@@ -36,6 +36,18 @@ final class Prefs {
                 .apply();
     }
 
+    static void clearLastTargetIfMatches(Context context, String packageName) {
+        SharedPreferences state = prefs(context);
+        String current = state.getString(KEY_LAST_TARGET, null);
+        if (!packageName.equals(current)) return;
+
+        state.edit()
+                .remove(KEY_LAST_TARGET)
+                .remove(KEY_LAST_TARGET_AT)
+                .putBoolean(KEY_TARGET_IS_FOREGROUND, false)
+                .apply();
+    }
+
     static boolean isTargetForeground(Context context) {
         return prefs(context).getBoolean(KEY_TARGET_IS_FOREGROUND, false);
     }
