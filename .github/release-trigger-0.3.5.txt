@@ -1,1 +1,0 @@
-Rebuild signed ApKilla 0.3.5 after disabling legacy Kill last shortcuts.
