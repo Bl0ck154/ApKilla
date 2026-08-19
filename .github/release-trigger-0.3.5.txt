@@ -1,0 +1,1 @@
+Trigger signed ApKilla 0.3.5 release after removing Kill last.
