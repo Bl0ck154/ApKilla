@@ -44,6 +44,7 @@ final class TargetResolver {
                 || packageName.equals("com.android.systemui")
                 || packageName.equals("com.android.settings")
                 || packageName.equals("com.oplus.settings")
-                || packageName.equals("com.coloros.settings");
+                || packageName.equals("com.coloros.settings")
+                || packageName.equals("com.google.android.googlequicksearchbox");
     }
 }
