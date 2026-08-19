@@ -21,6 +21,8 @@ public class KillAccessibilityService extends AccessibilityService {
     private static final int MAX_RETRIES = 24;
     private static final long RETRY_DELAY_MS = 80L;
     private static final long TILE_REFRESH_DEBOUNCE_MS = 250L;
+    private static final long GOOGLE_TARGET_DEBOUNCE_MS = 800L;
+    private static final String GOOGLE_QUICK_SEARCH_PACKAGE = "com.google.android.googlequicksearchbox";
 
     private static volatile boolean connected = false;
 
@@ -30,6 +32,7 @@ public class KillAccessibilityService extends AccessibilityService {
     private boolean waitingForConfirmation = false;
     private long activeRequestAt = -1L;
     private long lastTileRefreshAt = 0L;
+    private Runnable pendingGoogleTargetCommit;
 
     private static final List<String> FORCE_STOP_TEXTS = Arrays.asList(
             "force stop",
@@ -57,6 +60,12 @@ public class KillAccessibilityService extends AccessibilityService {
         super.onServiceConnected();
         connected = true;
         refreshHomePackages();
+
+        // 0.3.3 migration: older versions could persist the Google Search/Discover
+        // overlay as the last foreground app on ColorOS/Realme. Drop that stale
+        // value once; a genuinely opened Google app will be learned again after
+        // the debounce below.
+        Prefs.clearLastTargetIfMatches(this, GOOGLE_QUICK_SEARCH_PACKAGE);
 
         long pendingAt = Prefs.getPendingAt(this);
         if (pendingAt > 0L && System.currentTimeMillis() - pendingAt > REQUEST_TIMEOUT_MS) {
@@ -97,6 +106,7 @@ public class KillAccessibilityService extends AccessibilityService {
 
     @Override
     public void onInterrupt() {
+        cancelPendingGoogleTarget();
         handler.removeCallbacksAndMessages(null);
         automationScheduled = false;
     }
@@ -104,6 +114,7 @@ public class KillAccessibilityService extends AccessibilityService {
     @Override
     public boolean onUnbind(Intent intent) {
         connected = false;
+        cancelPendingGoogleTarget();
         requestTileRefresh(true);
         return super.onUnbind(intent);
     }
@@ -111,6 +122,7 @@ public class KillAccessibilityService extends AccessibilityService {
     @Override
     public void onDestroy() {
         connected = false;
+        cancelPendingGoogleTarget();
         requestTileRefresh(true);
         super.onDestroy();
     }
@@ -121,9 +133,10 @@ public class KillAccessibilityService extends AccessibilityService {
         }
 
         if (isHomePackage(packageName)) {
-            // This is the only moment when the launcher shortcut snapshot is
-            // created: the app that was genuinely foreground immediately before
-            // Android switched to Home.
+            // Google Search / Discover can emit a window event a fraction of a
+            // second before ColorOS reports Home. If that happened, cancel the
+            // uncommitted Google target so the genuine previous app is preserved.
+            cancelPendingGoogleTarget();
             Prefs.captureTargetBeforeHome(this);
             Prefs.markNoForegroundTarget(this);
             requestTileRefresh(false);
@@ -131,6 +144,7 @@ public class KillAccessibilityService extends AccessibilityService {
         }
 
         if (isSettingsPackage(packageName)) {
+            cancelPendingGoogleTarget();
             Prefs.clearLastHomeTarget(this);
             Prefs.markNoForegroundTarget(this);
             requestTileRefresh(false);
@@ -138,6 +152,7 @@ public class KillAccessibilityService extends AccessibilityService {
         }
 
         if (packageName.equals(getPackageName())) {
+            cancelPendingGoogleTarget();
             Prefs.markNoForegroundTarget(this);
             requestTileRefresh(false);
             return;
@@ -147,8 +162,30 @@ public class KillAccessibilityService extends AccessibilityService {
             return;
         }
 
+        if (GOOGLE_QUICK_SEARCH_PACKAGE.equals(packageName)) {
+            scheduleGoogleTargetCommit();
+            return;
+        }
+
+        cancelPendingGoogleTarget();
         Prefs.setForegroundTarget(this, packageName);
         requestTileRefresh(false);
+    }
+
+    private void scheduleGoogleTargetCommit() {
+        cancelPendingGoogleTarget();
+        pendingGoogleTargetCommit = () -> {
+            pendingGoogleTargetCommit = null;
+            Prefs.setForegroundTarget(this, GOOGLE_QUICK_SEARCH_PACKAGE);
+            requestTileRefresh(false);
+        };
+        handler.postDelayed(pendingGoogleTargetCommit, GOOGLE_TARGET_DEBOUNCE_MS);
+    }
+
+    private void cancelPendingGoogleTarget() {
+        if (pendingGoogleTargetCommit == null) return;
+        handler.removeCallbacks(pendingGoogleTargetCommit);
+        pendingGoogleTargetCommit = null;
     }
 
     private void requestTileRefresh(boolean force) {
