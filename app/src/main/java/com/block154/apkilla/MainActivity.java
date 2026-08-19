@@ -4,6 +4,7 @@ import android.app.Activity;
 import android.app.StatusBarManager;
 import android.content.ComponentName;
 import android.content.Intent;
+import android.content.pm.ShortcutManager;
 import android.graphics.Color;
 import android.graphics.Typeface;
 import android.graphics.drawable.GradientDrawable;
@@ -21,6 +22,8 @@ import android.widget.LinearLayout;
 import android.widget.ScrollView;
 import android.widget.TextView;
 import android.widget.Toast;
+
+import java.util.Arrays;
 
 public class MainActivity extends Activity {
     private static final int BG = Color.rgb(11, 13, 18);
@@ -45,6 +48,7 @@ public class MainActivity extends Activity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        disableLegacyKillLastShortcuts();
         configureWindow();
         setContentView(buildUi());
     }
@@ -61,6 +65,20 @@ public class MainActivity extends Activity {
     protected void onDestroy() {
         handler.removeCallbacksAndMessages(null);
         super.onDestroy();
+    }
+
+    private void disableLegacyKillLastShortcuts() {
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.N_MR1) return;
+        try {
+            ShortcutManager manager = getSystemService(ShortcutManager.class);
+            if (manager != null) {
+                manager.disableShortcuts(
+                        Arrays.asList("kill_last", "kill_last_pinned"),
+                        getString(R.string.shortcut_removed)
+                );
+            }
+        } catch (Exception ignored) {
+        }
     }
 
     private void configureWindow() {
