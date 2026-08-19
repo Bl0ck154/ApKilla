@@ -4,10 +4,6 @@ import android.app.Activity;
 import android.app.StatusBarManager;
 import android.content.ComponentName;
 import android.content.Intent;
-import android.content.pm.ApplicationInfo;
-import android.content.pm.PackageManager;
-import android.content.pm.ShortcutInfo;
-import android.content.pm.ShortcutManager;
 import android.graphics.Color;
 import android.graphics.Typeface;
 import android.graphics.drawable.GradientDrawable;
@@ -26,8 +22,6 @@ import android.widget.ScrollView;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import java.util.List;
-
 public class MainActivity extends Activity {
     private static final int BG = Color.rgb(11, 13, 18);
     private static final int CARD = Color.rgb(22, 25, 33);
@@ -36,21 +30,17 @@ public class MainActivity extends Activity {
     private static final int ACCENT = Color.rgb(255, 94, 91);
     private static final int GREEN = Color.rgb(83, 207, 143);
     private static final int AMBER = Color.rgb(255, 186, 73);
-    private static final String PINNED_SHORTCUT_ID = "kill_last_pinned";
 
     private final Handler handler = new Handler(Looper.getMainLooper());
 
     private TextView badgeView;
     private TextView automationValue;
     private TextView tileValue;
-    private TextView targetValue;
     private TextView setupLabel;
     private LinearLayout setupCard;
     private View accessibilityAction;
     private View tileAction;
-    private View pinShortcutAction;
     private View setupDivider;
-    private View pinShortcutDivider;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -141,8 +131,6 @@ public class MainActivity extends Activity {
         automationValue = addStatusRow(statusCard, getString(R.string.status_automation), getString(R.string.status_checking));
         addDivider(statusCard);
         tileValue = addStatusRow(statusCard, getString(R.string.status_quick_settings), getString(R.string.status_checking));
-        addDivider(statusCard);
-        targetValue = addStatusRow(statusCard, getString(R.string.status_last_app), "—");
         content.addView(statusCard);
 
         setupLabel = sectionLabel(getString(R.string.section_setup));
@@ -167,14 +155,6 @@ public class MainActivity extends Activity {
 
         content.addView(sectionLabel(getString(R.string.section_quick_access)), sectionParams(26));
         LinearLayout quickCard = card();
-        pinShortcutAction = addActionRow(
-                quickCard,
-                getString(R.string.action_pin_shortcut),
-                getString(R.string.action_pin_shortcut_desc),
-                false,
-                v -> pinHomeShortcut()
-        );
-        pinShortcutDivider = addDivider(quickCard);
         addActionRow(
                 quickCard,
                 getString(R.string.action_repair_tile),
@@ -220,7 +200,6 @@ public class MainActivity extends Activity {
 
         tileValue.setText(tileAdded ? R.string.status_added : R.string.status_not_confirmed);
         tileValue.setTextColor(tileAdded ? GREEN : MUTED);
-        targetValue.setText(readableTarget(Prefs.getLastTarget(this)));
 
         accessibilityAction.setVisibility(enabled ? View.GONE : View.VISIBLE);
         tileAction.setVisibility(tileAdded ? View.GONE : View.VISIBLE);
@@ -229,26 +208,9 @@ public class MainActivity extends Activity {
         setupLabel.setVisibility(setupComplete ? View.GONE : View.VISIBLE);
         setupCard.setVisibility(setupComplete ? View.GONE : View.VISIBLE);
 
-        boolean pinned = isHomeShortcutPinned();
-        boolean hidePin = pinned || Build.VERSION.SDK_INT < Build.VERSION_CODES.O;
-        pinShortcutAction.setVisibility(hidePin ? View.GONE : View.VISIBLE);
-        pinShortcutDivider.setVisibility(hidePin ? View.GONE : View.VISIBLE);
-
         badgeView.setText(setupComplete ? R.string.badge_ready : R.string.badge_setup);
         badgeView.setTextColor(setupComplete ? GREEN : AMBER);
         badgeView.setBackground(roundRect(setupComplete ? Color.rgb(25, 58, 44) : Color.rgb(63, 49, 24), 999));
-    }
-
-    private String readableTarget(String packageName) {
-        if (packageName == null || packageName.trim().isEmpty()) return "—";
-        try {
-            PackageManager pm = getPackageManager();
-            ApplicationInfo info = pm.getApplicationInfo(packageName, 0);
-            CharSequence label = pm.getApplicationLabel(info);
-            if (label != null && label.length() > 0) return label.toString();
-        } catch (Exception ignored) {
-        }
-        return packageName;
     }
 
     private void requestTile() {
@@ -280,49 +242,6 @@ public class MainActivity extends Activity {
         } else {
             Toast.makeText(this, R.string.add_tile_manual, Toast.LENGTH_LONG).show();
         }
-    }
-
-    private void pinHomeShortcut() {
-        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O) {
-            Toast.makeText(this, R.string.shortcut_not_supported, Toast.LENGTH_SHORT).show();
-            return;
-        }
-
-        ShortcutManager manager = getSystemService(ShortcutManager.class);
-        if (manager == null || !manager.isRequestPinShortcutSupported()) {
-            Toast.makeText(this, R.string.shortcut_not_supported, Toast.LENGTH_SHORT).show();
-            return;
-        }
-
-        Intent action = new Intent(this, KillActionActivity.class)
-                .setAction("com.block154.apkilla.action.KILL_LAST");
-        ShortcutInfo shortcut = new ShortcutInfo.Builder(this, PINNED_SHORTCUT_ID)
-                .setShortLabel(getString(R.string.shortcut_kill_short))
-                .setLongLabel(getString(R.string.shortcut_kill_long))
-                .setIcon(Icon.createWithResource(this, R.drawable.ic_app))
-                .setIntent(action)
-                .build();
-
-        if (manager.requestPinShortcut(shortcut, null)) {
-            Toast.makeText(this, R.string.shortcut_request_sent, Toast.LENGTH_SHORT).show();
-            handler.postDelayed(this::refreshStatus, 900L);
-        } else {
-            Toast.makeText(this, R.string.shortcut_not_supported, Toast.LENGTH_SHORT).show();
-        }
-    }
-
-    private boolean isHomeShortcutPinned() {
-        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O) return false;
-        ShortcutManager manager = getSystemService(ShortcutManager.class);
-        if (manager == null) return false;
-        try {
-            List<ShortcutInfo> pinned = manager.getPinnedShortcuts();
-            for (ShortcutInfo shortcut : pinned) {
-                if (PINNED_SHORTCUT_ID.equals(shortcut.getId())) return true;
-            }
-        } catch (Exception ignored) {
-        }
-        return false;
     }
 
     private TextView addStatusRow(LinearLayout parent, String title, String initialValue) {
