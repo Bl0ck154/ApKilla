@@ -13,6 +13,7 @@ final class Prefs {
     private static final String KEY_PENDING_TARGET = "pending_target";
     private static final String KEY_PENDING_AT = "pending_at";
     private static final String KEY_TILE_ADDED = "tile_added";
+    private static final String GOOGLE_QUICK_SEARCH_PACKAGE = "com.google.android.googlequicksearchbox";
 
     private Prefs() {}
 
@@ -29,6 +30,15 @@ final class Prefs {
     }
 
     static void setForegroundTarget(Context context, String packageName) {
+        // On ColorOS/Realme this package is also the Home search/Discover/Assistant
+        // surface. Treat a sustained Google event as "no safe foreground target"
+        // instead of risking killing the previous real app. Short transient Google
+        // events are already debounced/cancelled by KillAccessibilityService.
+        if (GOOGLE_QUICK_SEARCH_PACKAGE.equals(packageName)) {
+            markNoForegroundTarget(context);
+            return;
+        }
+
         prefs(context).edit()
                 .putString(KEY_LAST_TARGET, packageName)
                 .putLong(KEY_LAST_TARGET_AT, System.currentTimeMillis())
