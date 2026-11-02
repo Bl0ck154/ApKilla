@@ -17,7 +17,7 @@
 </p>
 
 > [!NOTE]
-> **Stable download: v0.3.5.** The updated **v0.4.0** code is on `main` and has passed CI, but a public release hasn't been tagged yet. For the signed test build and device-verification checklist see [issue #11](https://github.com/Bl0ck154/ApKilla/issues/11).
+> **Latest stable: v0.4.0.** This release includes more reliable Accessibility handling and local diagnostics. Android Settings controls differ by device; report problems with your phone model and Android version.
 
 ## What ApKilla does
 
@@ -44,8 +44,8 @@ If ApKilla can't identify the current app safely, it refuses the operation. If A
 
 | Edition | Purpose | Link |
 | --- | --- | --- |
-| **v0.3.5 — stable** | Latest published APK | [GitHub Releases](https://github.com/Bl0ck154/ApKilla/releases/latest) |
-| **v0.4.0 — QA** | Testing current fixes on real phones | [Testing instructions and signed artifact](https://github.com/Bl0ck154/ApKilla/issues/11) |
+| **v0.4.0 — stable** | Latest signed APK | [Download release](https://github.com/Bl0ck154/ApKilla/releases/tag/v0.4.0) |
+| **v0.3.5 — previous** | Older signed APK | [Previous release](https://github.com/Bl0ck154/ApKilla/releases/tag/v0.3.5) |
 
 ## Compatibility and limitations
 
@@ -55,7 +55,7 @@ If ApKilla can't identify the current app safely, it refuses the operation. If A
 - A successful confirmation tap is **not** independent proof that Android stopped the target.
 - Pending actions expire after 10 seconds. ApKilla avoids system UI, launchers, Settings, and its own package.
 
-Read the [OEM compatibility notes](COMPATIBILITY.md) and [troubleshooting guide](TROUBLESHOOTING.md). The v0.4.0 QA build adds **Last action** and **Copy diagnostics** to help investigate failures.
+Read the [OEM compatibility notes](COMPATIBILITY.md) and [troubleshooting guide](TROUBLESHOOTING.md). Version 0.4.0 adds **Last action** and **Copy diagnostics** to help investigate failures.
 
 ## Security and privacy
 
