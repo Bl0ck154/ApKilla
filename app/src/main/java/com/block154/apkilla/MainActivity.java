@@ -39,6 +39,7 @@ public class MainActivity extends Activity {
     private TextView badgeView;
     private TextView automationValue;
     private TextView tileValue;
+    private TextView lastActionValue;
     private TextView setupLabel;
     private LinearLayout setupCard;
     private View accessibilityAction;
@@ -149,6 +150,8 @@ public class MainActivity extends Activity {
         automationValue = addStatusRow(statusCard, getString(R.string.status_automation), getString(R.string.status_checking));
         addDivider(statusCard);
         tileValue = addStatusRow(statusCard, getString(R.string.status_quick_settings), getString(R.string.status_checking));
+        addDivider(statusCard);
+        lastActionValue = addStatusRow(statusCard, getString(R.string.status_last_action), getString(R.string.status_no_operations));
         content.addView(statusCard);
 
         setupLabel = sectionLabel(getString(R.string.section_setup));
@@ -216,6 +219,7 @@ public class MainActivity extends Activity {
             automationValue.setTextColor(AMBER);
         }
 
+        lastActionValue.setText(StopHistory.lastSummary(this));
         tileValue.setText(tileAdded ? R.string.status_added : R.string.status_not_confirmed);
         tileValue.setTextColor(tileAdded ? GREEN : MUTED);
 

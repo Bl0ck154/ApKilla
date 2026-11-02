@@ -18,6 +18,10 @@
     <string name="status_automation">Automation</string>
     <string name="status_quick_settings">Quick Settings</string>
     <string name="status_checking">Checking…</string>
+    <string name="status_last_action">Last action</string>
+    <string name="status_no_operations">No operations yet</string>
+    <string name="service_not_connected">Automation is enabled but not connected. Open ApKilla and check Accessibility.</string>
+    <string name="kill_in_progress">A force-stop request is already running.</string>
     <string name="status_on">On</string>
     <string name="status_enabled_reconnecting">Enabled · reconnecting</string>
     <string name="status_off">Needs setup</string>
@@ -36,7 +40,7 @@
     <string name="note">Android may briefly show the App info screen while ApKilla presses Force stop and confirms it automatically. The tile stays available through temporary Accessibility service reconnects.</string>
     <string name="enable_accessibility_first">Enable “ApKilla automation” in Accessibility first.</string>
     <string name="no_target">No foreground app to kill right now.</string>
-    <string name="kill_failed">Couldn’t find the Force stop controls on this Android skin.</string>
+    <string name="kill_failed">Could not finish Force stop. Check the last action in ApKilla.</string>
     <string name="add_tile_manual">Open Quick Settings edit mode and add the “Kill app” tile manually.</string>
     <string name="tile_ready_to_use">Quick Settings tile is ready.</string>
     <string name="tile_request_failed">Android couldn’t add the tile right now.</string>

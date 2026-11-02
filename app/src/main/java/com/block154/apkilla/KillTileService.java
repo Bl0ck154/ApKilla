@@ -67,14 +67,31 @@ public class KillTileService extends TileService {
             return;
         }
 
+        // Enabled in settings is not the same as a bound and responsive service.
+        if (!KillAccessibilityService.isConnected()) {
+            StopHistory.record(this, "Accessibility disconnected");
+            Toast.makeText(this, R.string.service_not_connected, Toast.LENGTH_LONG).show();
+            launchAndCollapse(new Intent(this, MainActivity.class)
+                    .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK));
+            return;
+        }
+
         String target = TargetResolver.resolveForTile(this);
         if (target == null) {
+            StopHistory.record(this, "No foreground target");
             Toast.makeText(this, R.string.no_target, Toast.LENGTH_SHORT).show();
             updateTile();
             return;
         }
 
+        if (Prefs.hasPendingKill(this)
+                && !StopPolicy.isExpired(Prefs.getPendingAt(this), System.currentTimeMillis(), 10_000L)) {
+            StopHistory.record(this, "Operation already running");
+            Toast.makeText(this, R.string.kill_in_progress, Toast.LENGTH_SHORT).show();
+            return;
+        }
         Prefs.requestKill(this, target);
+        StopHistory.record(this, "Opening app info");
 
         Intent details = new Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS)
                 .setData(Uri.parse("package:" + target))
@@ -96,8 +113,14 @@ public class KillTileService extends TileService {
                 startActivityAndCollapse(intent);
             }
         } catch (Exception e) {
-            intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-            startActivity(intent);
+            try {
+                intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                startActivity(intent);
+            } catch (RuntimeException failed) {
+                Prefs.clearPendingKill(this);
+                StopHistory.record(this, "Could not open Settings");
+                Toast.makeText(this, R.string.kill_failed, Toast.LENGTH_SHORT).show();
+            }
         }
     }
 
