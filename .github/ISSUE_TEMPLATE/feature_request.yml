@@ -1,0 +1,17 @@
+name: Feature request
+description: Suggest a focused improvement to ApKilla
+title: "[Feature] "
+labels: ["enhancement"]
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: What problem should this solve?
+    validations:
+      required: true
+  - type: textarea
+    id: idea
+    attributes:
+      label: Suggested behavior
+    validations:
+      required: true

@@ -11,3 +11,6 @@ app/build/
 *.jks
 *.keystore
 signing/
+
+# Build output belongs in GitHub Releases, not source control.
+/dist/

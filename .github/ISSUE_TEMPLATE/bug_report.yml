@@ -1,0 +1,33 @@
+name: Bug report
+description: Report a force-stop failure, disconnect, or OEM compatibility issue
+title: "[Bug] "
+labels: ["bug"]
+body:
+  - type: input
+    id: device
+    attributes:
+      label: Device and OEM skin
+      placeholder: "Example: Realme model, Realme UI version"
+    validations:
+      required: true
+  - type: input
+    id: android
+    attributes:
+      label: Android and ApKilla versions
+      placeholder: "Android 15, ApKilla 0.3.5"
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to reproduce
+      description: Please redact sensitive app names, screenshots and account information.
+    validations:
+      required: true
+  - type: textarea
+    id: observed
+    attributes:
+      label: Expected / observed result and Last action
+      description: Include the Last action status shown in ApKilla if available.
+    validations:
+      required: true
