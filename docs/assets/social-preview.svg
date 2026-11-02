@@ -1,0 +1,40 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1280" height="640" viewBox="0 0 1280 640" role="img" aria-labelledby="t d">
+<title id="t">ApKilla — Force stop. One tap.</title>
+<desc id="d">Branded ApKilla share graphic with a stylized Quick Settings tile. An illustration, not an Android screenshot.</desc>
+<defs><linearGradient id="bg" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#14243b"/><stop offset="1" stop-color="#0a101b"/></linearGradient>
+<linearGradient id="accent" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#ff927c"/><stop offset="1" stop-color="#ed536a"/></linearGradient></defs>
+<rect width="1280" height="640" fill="url(#bg)"/>
+<circle cx="1100" cy="32" r="380" fill="#f06c73" opacity=".06"/>
+<path d="M0 570 C290 420 485 680 840 340 S1180 280 1280 50" stroke="#293d54" stroke-width="3" fill="none"/>
+<rect x="74" y="73" width="104" height="104" rx="27" fill="url(#accent)"/>
+<path d="M126 95 v40 M98 114 a38 38 0 1 0 56 0" stroke="#fff" stroke-width="10" stroke-linecap="round" fill="none"/>
+<g font-family="Arial,Helvetica,sans-serif">
+<text x="201" y="146" fill="#f5f8fd" font-weight="700" font-size="65" letter-spacing="-1">ApKilla</text>
+<text x="73" y="304" fill="#fff" font-weight="700" font-size="84" letter-spacing="-2">Force stop.</text>
+<text x="73" y="395" fill="#ff857b" font-weight="700" font-size="84" letter-spacing="-2">One tap.</text>
+<text x="78" y="460" fill="#bfccdb" font-size="27">From Android Quick Settings.</text>
+<g fill="#cfe6df" font-size="20">
+<rect x="75" y="508" width="165" height="52" rx="26" fill="#223a4e"/>
+<rect x="253" y="508" width="151" height="52" rx="26" fill="#223a4e"/>
+<rect x="418" y="508" width="203" height="52" rx="26" fill="#223a4e"/>
+<text x="157" y="542" text-anchor="middle">No root</text>
+<text x="328" y="542" text-anchor="middle">No ADB</text>
+<text x="519" y="542" text-anchor="middle">Offline by design</text>
+</g>
+<g transform="translate(795 114)">
+<rect width="414" height="414" rx="43" fill="#22344b" stroke="#465b74" stroke-width="3"/>
+<rect x="23" y="21" width="368" height="372" rx="31" fill="#111b2b"/>
+<text x="49" y="69" fill="#bccbe0" font-size="20" font-weight="700">QUICK SETTINGS</text>
+<rect x="49" y="96" width="153" height="96" rx="22" fill="#364b65"/>
+<rect x="219" y="96" width="147" height="96" rx="22" fill="#364b65"/>
+<circle cx="95" cy="133" r="17" fill="none" stroke="#deebfa" stroke-width="4"/>
+<circle cx="261" cy="133" r="17" fill="none" stroke="#deebfa" stroke-width="4"/>
+<text x="68" y="170" fill="#e9f2fb" font-size="16">Wi-Fi</text>
+<text x="237" y="170" fill="#e9f2fb" font-size="16">Bluetooth</text>
+<rect x="49" y="214" width="317" height="123" rx="26" fill="url(#accent)"/>
+<circle cx="110" cy="274" r="32" fill="#fff" opacity=".2"/>
+<path d="M110 253 v24 M90 264 a27 27 0 1 0 40 0" stroke="#fff" stroke-width="5" fill="none" stroke-linecap="round"/>
+<text x="158" y="270" fill="#fff" font-size="28" font-weight="700">Kill app</text>
+<text x="158" y="299" fill="#fff" font-size="16">One-tap shortcut</text>
+</g>
+</g></svg>
