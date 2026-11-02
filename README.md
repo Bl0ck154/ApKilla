@@ -1,65 +1,82 @@
-# ApKilla
+<p align="center"><img src="docs/assets/hero.svg" alt="ApKilla — Force stop an Android app in one tap" width="100%"></p>
 
-**Force-stop the Android app you're using from a Quick Settings tile.**
+<p align="center">
+<a href="https://github.com/Bl0ck154/ApKilla/releases/latest"><img src="https://img.shields.io/github/v/release/Bl0ck154/ApKilla?label=stable%20APK&color=ef696a" alt="Stable APK release"></a>
+<a href="https://github.com/Bl0ck154/ApKilla/actions/workflows/build.yml"><img src="https://github.com/Bl0ck154/ApKilla/actions/workflows/build.yml/badge.svg?branch=main" alt="Android CI"></a>
+<a href="LICENSE"><img src="https://img.shields.io/github/license/Bl0ck154/ApKilla?color=64748b" alt="MIT license"></a>
+<img src="https://img.shields.io/badge/Android-7.0%2B-168c78" alt="Android 7.0+">
+</p>
 
-ApKilla opens the selected app's Android **App info** screen and uses Accessibility to tap **Force stop** and confirm. You tap the **Kill app** tile once. The Settings screen may briefly appear during the process.
+<p align="center"><strong>One Quick Settings tile. No root, ADB, Shizuku, Tasker, account, or Internet permission.</strong></p>
 
-No root, ADB, wireless debugging, Shizuku, Tasker, account, or Internet permission.
+<p align="center">
+<a href="https://github.com/Bl0ck154/ApKilla/releases/latest"><strong>Download APK</strong></a> ·
+<a href="https://bl0ck154.github.io/ApKilla/">Website</a> ·
+<a href="#getting-started">Getting started</a> ·
+<a href="https://github.com/Bl0ck154/ApKilla/issues/new/choose">Report a bug</a>
+</p>
 
-[**Download the signed APK**](https://github.com/Bl0ck154/ApKilla/releases/latest) · [Report a bug](https://github.com/Bl0ck154/ApKilla/issues/new/choose) · [How it works](#how-it-works)
+> [!NOTE]
+> **Stable download: v0.3.5.** The updated **v0.4.0** code is on `main` and has passed CI, but a public release hasn't been tagged yet. For the signed test build and device-verification checklist see [issue #11](https://github.com/Bl0ck154/ApKilla/issues/11).
 
-![ApKilla Quick Settings flow illustration](docs/quick-settings-flow.svg)
+## What ApKilla does
 
-## Set up
+ApKilla is a small, offline Android app that opens the system **App info** screen for the app you're using, then uses Accessibility to press **Force stop** and confirm it. You trigger the sequence with **Kill app** in Quick Settings.
 
-1. Download the latest signed APK from [GitHub Releases](https://github.com/Bl0ck154/ApKilla/releases).
-2. Open ApKilla and enable **ApKilla automation** under Android's Accessibility settings.
-3. Add **Kill app** to Quick Settings, then return to the app you want to stop.
-4. Pull down Quick Settings and tap **Kill app**.
+| One action | No root or debugging | Private by design |
+| :--- | :--- | :--- |
+| Tap the tile while using an app. | No ADB, Shizuku, wireless debugging, or Tasker. | No Internet permission, analytics, account, or telemetry. |
 
-ApKilla must be able to observe the current foreground app before opening Quick Settings. If it cannot determine a safe target, it refuses the operation. If Accessibility is disconnected, open ApKilla and check whether Android has disabled its service.
+<p align="center"><img src="docs/assets/flow.svg" alt="Illustration of the three-step ApKilla flow" width="100%"></p>
 
-## How it works
+<sub>Illustrative diagram, not a real device screenshot. Android Settings may flash briefly.</sub>
 
-A regular Android app cannot silently force-stop another package through a public Android API. ApKilla automates the phone's built-in App info screen:
+## Getting started
 
-1. An Accessibility service tracks foreground window changes.
-2. The Quick Settings tile uses the current, live foreground target.
-3. Android opens that package's **App info** screen.
-4. ApKilla finds **Force stop** and the confirmation control.
-5. The app records whether the request was sent or failed. A successful tap is **not** independently verified as a completed force-stop.
+1. **Install** the [latest signed stable APK](https://github.com/Bl0ck154/ApKilla/releases/latest).
+2. **Enable** **ApKilla automation** in your Android Accessibility settings.
+3. **Add** **Kill app** to Quick Settings.
+4. **Use an app**, pull down Quick Settings and tap **Kill app**.
 
-The automation intentionally avoids system UI, launchers, Settings, and ApKilla itself. It won't kill an old remembered app after an Accessibility disconnect. A request expires after 10 seconds.
+If ApKilla can't identify the current app safely, it refuses the operation. If Android disconnects the Accessibility service, open ApKilla and check its status.
+
+## Downloads
+
+| Edition | Purpose | Link |
+| --- | --- | --- |
+| **v0.3.5 — stable** | Latest published APK | [GitHub Releases](https://github.com/Bl0ck154/ApKilla/releases/latest) |
+| **v0.4.0 — QA** | Testing current fixes on real phones | [Testing instructions and signed artifact](https://github.com/Bl0ck154/ApKilla/issues/11) |
 
 ## Compatibility and limitations
 
-- Requires Android 7.0+ (API 24).
-- Uses the Android Accessibility service. Its connection, Settings layout, and Force stop dialogs vary by OEM and Android release.
-- The app currently includes button selectors for standard Android plus some translated controls; **no device-wide compatibility claim is made**.
-- If your phone restricts background Accessibility services, Android may disable or disconnect ApKilla until you re-enable it.
-- Some protected/system apps cannot be stopped through Android Settings.
-- A tap on a confirmation control is not proof that the process stopped. If the app stays active, report your device and Android version.
+- **Android 7.0+ (API 24).** System Settings layouts and Accessibility availability vary by manufacturer.
+- Android can disable or disconnect Accessibility services. There is no guaranteed way for a standard app to keep them connected on every device.
+- Some protected apps cannot be force-stopped; others can restart immediately.
+- A successful confirmation tap is **not** independent proof that Android stopped the target.
+- Pending actions expire after 10 seconds. ApKilla avoids system UI, launchers, Settings, and its own package.
 
-See [Troubleshooting](TROUBLESHOOTING.md) and [Compatibility](COMPATIBILITY.md). You can use **Copy diagnostics** in ApKilla to copy a local, app-name-free operation history into a bug report.
+Read the [OEM compatibility notes](COMPATIBILITY.md) and [troubleshooting guide](TROUBLESHOOTING.md). The v0.4.0 QA build adds **Last action** and **Copy diagnostics** to help investigate failures.
 
-## Privacy
+## Security and privacy
 
-ApKilla has **no Internet permission** and no analytics or telemetry. It stores the last foreground package locally to drive the Quick Settings action, and it stores a small local history of operation outcomes without package names. Nothing is uploaded. See [PRIVACY.md](PRIVACY.md).
+Accessibility lets an app inspect UI content. ApKilla uses it to track window changes and automate the system Force stop UI only when you tap the tile. It requests no Internet permission. The app does not send data to a server. [Privacy details](PRIVACY.md) · [Automation source](app/src/main/java/com/block154/apkilla/KillAccessibilityService.java).
 
-Accessibility access is powerful. Review the [source code](app/src/main/java/com/block154/apkilla/KillAccessibilityService.java) before enabling it if you are unsure.
+## Build from source
 
-## Build and test
-
-Requires Android SDK 35, JDK 17, and Gradle 8.9.
+Requires JDK 17, Android SDK 35 and Gradle 8.9.
 
 ```bash
 gradle :app:testDebugUnitTest :app:assembleDebug
 ```
 
-Signed release APKs are produced by GitHub Actions from explicit `v*` tags. Release signing uses a permanent key stored in GitHub Secrets and verified against a published certificate fingerprint; see [SIGNING.md](SIGNING.md). The private key is never committed.
+CI runs unit tests and a debug build. Signed releases use a permanent certificate checked during the release workflow ([signing details](SIGNING.md)). Published releases cannot be overwritten with a new APK using the same tag.
 
 ## Contribute
 
-Bug reports with the phone model, Android version, OEM skin, and reproducible steps are particularly useful. Do not post sensitive screen contents or personal data in logs.
+If ApKilla works—or doesn't—on your phone, a [device-specific report](https://github.com/Bl0ck154/ApKilla/issues/new/choose) helps. Please include Android and OEM skin versions, but redact personal screen content and identifiers.
 
-See [CONTRIBUTING.md](CONTRIBUTING.md), [CHANGELOG.md](CHANGELOG.md), and the [MIT license](LICENSE).
+[Contributing](CONTRIBUTING.md) · [Changelog](CHANGELOG.md) · [Security](SECURITY.md) · [Privacy](PRIVACY.md) · [MIT license](LICENSE)
+
+---
+
+<p align="center"><sub>Independent open-source Android utility. Not affiliated with any Android device manufacturer.</sub></p>

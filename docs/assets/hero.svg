@@ -1,0 +1,40 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="420" viewBox="0 0 1200 420" role="img" aria-labelledby="title desc">
+<title id="title">ApKilla — Force stop an Android app in one tap</title>
+<desc id="desc">Dark ApKilla graphic with coral Quick Settings tile illustration. Artwork, not a device screenshot.</desc>
+<defs>
+ <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#142034"/><stop offset="1" stop-color="#090f1a"/></linearGradient>
+ <linearGradient id="hot" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#ff8b79"/><stop offset="1" stop-color="#ee5767"/></linearGradient>
+</defs>
+<rect width="1200" height="420" rx="24" fill="url(#bg)"/>
+<circle cx="1070" cy="20" r="260" fill="#f77070" opacity=".055"/>
+<path d="M0 350 C290 220 390 510 760 240 S1050 190 1200 90" stroke="#26354a" fill="none" stroke-width="2"/>
+<rect x="67" y="54" width="60" height="60" rx="17" fill="url(#hot)"/>
+<path d="M97 69 v21 M84 78 a20 20 0 1 0 26 0" fill="none" stroke="#fff" stroke-width="5" stroke-linecap="round"/>
+<text x="143" y="99" fill="#f4f7fd" font-family="Arial,sans-serif" font-size="32" font-weight="700">ApKilla</text>
+<text x="67" y="188" fill="#fff" font-family="Arial,sans-serif" font-size="58" font-weight="700" letter-spacing="-1">Force stop.</text>
+<text x="67" y="250" fill="#ff857b" font-family="Arial,sans-serif" font-size="58" font-weight="700" letter-spacing="-1">One tap.</text>
+<text x="70" y="300" fill="#c4cfe0" font-family="Arial,sans-serif" font-size="23">From your Android Quick Settings.</text>
+<g font-family="Arial,sans-serif" font-size="16" fill="#daede8">
+ <rect x="67" y="335" width="125" height="42" rx="21" fill="#20384b"/><text x="129.5" y="362" text-anchor="middle">No root</text>
+ <rect x="205" y="335" width="125" height="42" rx="21" fill="#20384b"/><text x="267.5" y="362" text-anchor="middle">No ADB</text>
+ <rect x="343" y="335" width="210" height="42" rx="21" fill="#20384b"/><text x="448" y="362" text-anchor="middle">Offline by design</text>
+</g>
+<g transform="translate(766 35)" font-family="Arial,sans-serif">
+ <rect width="363" height="349" rx="33" fill="#1c2a3f" stroke="#425570" stroke-width="2"/>
+ <rect x="15" y="18" width="333" height="312" rx="23" fill="#121b2b"/>
+ <text x="38" y="55" fill="#9eb0c8" font-size="14">QUICK SETTINGS</text>
+ <rect x="34" y="77" width="136" height="83" rx="18" fill="#30435b"/>
+ <circle cx="76" cy="113" r="12" fill="none" stroke="#dce8f4" stroke-width="3"/>
+ <text x="48" y="146" fill="#f3f6fa" font-size="14">Wi-Fi</text>
+ <rect x="185" y="77" width="144" height="83" rx="18" fill="#30435b"/>
+ <circle cx="224" cy="113" r="12" fill="none" stroke="#dce8f4" stroke-width="3"/>
+ <text x="201" y="146" fill="#f3f6fa" font-size="14">Bluetooth</text>
+ <rect x="34" y="174" width="295" height="97" rx="21" fill="url(#hot)"/>
+ <circle cx="88" cy="223" r="26" fill="#fff" opacity=".18"/>
+ <path d="M88 205 v20 M74 213 a20 20 0 1 0 28 0" stroke="#fff" fill="none" stroke-width="4" stroke-linecap="round"/>
+ <text x="128" y="215" fill="#fff" font-size="22" font-weight="700">Kill app</text>
+ <text x="128" y="240" fill="#fff" font-size="14">Tap to force stop</text>
+ <rect x="38" y="298" width="280" height="3" rx="1.5" fill="#384c63"/>
+ <rect x="38" y="298" width="132" height="3" rx="1.5" fill="#fb8d80"/>
+</g>
+</svg>
