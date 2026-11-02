@@ -66,7 +66,7 @@ Accessibility lets an app inspect UI content. ApKilla uses it to track window ch
 Requires JDK 17, Android SDK 35 and Gradle 8.9.
 
 ```bash
-gradle :app:testDebugUnitTest :app:assembleDebug
+./gradlew :app:testDebugUnitTest :app:assembleDebug
 ```
 
 CI runs unit tests and a debug build. Signed releases use a permanent certificate checked during the release workflow ([signing details](SIGNING.md)). Published releases cannot be overwritten with a new APK using the same tag.

@@ -44,8 +44,6 @@ jobs:
       - name: Install Android SDK 35
         run: sdkmanager "platforms;android-35" "build-tools;35.0.0"
       - uses: gradle/actions/setup-gradle@ed408507eac070d1f99cc633dbcf757c94c7933a # v4
-        with:
-          gradle-version: '8.9'
       - name: Restore signing key
         env:
           KEYSTORE_B64: ${{ secrets.APKILLA_KEYSTORE_B64 }}
@@ -61,7 +59,7 @@ jobs:
           APKILLA_KEYSTORE_PATH: ${{ runner.temp }}/apkilla-release.jks
           APKILLA_KEYSTORE_PASSWORD: ${{ secrets.APKILLA_KEYSTORE_PASSWORD }}
         shell: bash
-        run: gradle --no-daemon :app:testDebugUnitTest :app:assembleRelease --stacktrace
+        run: ./gradlew --no-daemon :app:testDebugUnitTest :app:assembleRelease --stacktrace
       - name: Verify signing certificate
         shell: bash
         run: |

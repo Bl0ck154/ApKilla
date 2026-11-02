@@ -42,7 +42,5 @@ jobs:
       - name: Install Android SDK 35
         run: sdkmanager "platforms;android-35" "build-tools;35.0.0"
       - uses: gradle/actions/setup-gradle@ed408507eac070d1f99cc633dbcf757c94c7933a # v4
-        with:
-          gradle-version: '8.9'
       - name: Run unit tests and compile debug APK
-        run: gradle --no-daemon :app:testDebugUnitTest :app:assembleDebug --stacktrace
+        run: ./gradlew --no-daemon :app:testDebugUnitTest :app:assembleDebug --stacktrace
