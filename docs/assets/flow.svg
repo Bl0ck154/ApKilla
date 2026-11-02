@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1080" height="248" viewBox="0 0 1080 248" role="img" aria-labelledby="t d">
+<title id="t">Three steps to force stop an app</title><desc id="d">Open an app, tap Kill app in Quick Settings, then Android opens App info and confirms Force stop. This is an illustration rather than a device screenshot.</desc>
+<rect width="1080" height="248" rx="22" fill="#111b2a"/>
+<g font-family="Arial,sans-serif">
+<rect x="21" y="25" width="322" height="190" rx="20" fill="#1c2a3b" stroke="#334960"/>
+<rect x="379" y="25" width="322" height="190" rx="20" fill="#1c2a3b" stroke="#334960"/>
+<rect x="737" y="25" width="322" height="190" rx="20" fill="#1c2a3b" stroke="#334960"/>
+<circle cx="65" cy="70" r="22" fill="#38526a"/><circle cx="422" cy="70" r="22" fill="#ef696a"/><circle cx="780" cy="70" r="22" fill="#38526a"/>
+<g text-anchor="middle" font-size="22" fill="#fff" font-weight="700"><text x="65" y="78">1</text><text x="422" y="78">2</text><text x="780" y="78">3</text></g>
+<g font-size="21" fill="#fff" font-weight="700"><text x="99" y="77">Use an app</text><text x="456" y="77">Tap Kill app</text><text x="814" y="77">Force stop</text></g>
+<rect x="48" y="107" width="270" height="80" rx="14" fill="#2c4055"/><rect x="65" y="123" width="93" height="11" rx="5" fill="#f57871"/><rect x="65" y="145" width="219" height="10" rx="5" fill="#8394a8"/><rect x="65" y="165" width="162" height="9" rx="5" fill="#8394a8"/>
+<rect x="407" y="107" width="267" height="80" rx="14" fill="#f26f6c"/><circle cx="452" cy="148" r="21" fill="#f8a69c"/><path d="M452 133 v19 m-11 -11 a17 17 0 1 0 22 0" stroke="#fff" fill="none" stroke-width="3" stroke-linecap="round"/><text x="486" y="155" fill="#fff" font-size="24" font-weight="700">Kill app</text>
+<rect x="765" y="107" width="268" height="80" rx="14" fill="#2c4055"/><text x="783" y="139" fill="#e5eaf1" font-size="17">Android App info</text><rect x="783" y="151" width="106" height="26" rx="13" fill="#f26f6c"/><text x="836" y="169" text-anchor="middle" fill="#fff" font-size="13">Force stop</text>
+<path d="M348 124 h25 m-9 -9 l9 9 -9 9" stroke="#f26f6c" fill="none" stroke-width="3"/><path d="M707 124 h25 m-9 -9 l9 9 -9 9" stroke="#f26f6c" fill="none" stroke-width="3"/>
+</g></svg>

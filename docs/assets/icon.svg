@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="192" height="192" viewBox="0 0 192 192" role="img" aria-label="ApKilla icon">
+<defs><linearGradient id="a" x1="0" x2="1" y1="0" y2="1"><stop stop-color="#ff8d7b"/><stop offset="1" stop-color="#f05265"/></linearGradient></defs>
+<rect width="192" height="192" rx="44" fill="#121b2b"/>
+<circle cx="96" cy="96" r="68" fill="url(#a)"/>
+<circle cx="96" cy="96" r="50" fill="#172338"/>
+<path d="M96 46 v54 M62 75 a49 49 0 1 0 68 0" stroke="#fff" stroke-width="12" fill="none" stroke-linecap="round"/>
+</svg>
