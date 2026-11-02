@@ -1,0 +1,3 @@
+User-agent: *
+Allow: /
+Sitemap: https://bl0ck154.github.io/ApKilla/sitemap.xml

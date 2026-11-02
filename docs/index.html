@@ -1,0 +1,112 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#101a2a">
+<meta name="description" content="ApKilla is an offline Android utility that force-stops your current app from a Quick Settings tile. No root, ADB, Shizuku, Tasker, or Internet permission.">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="ApKilla">
+<meta property="og:title" content="ApKilla — Force stop. One tap.">
+<meta property="og:description" content="Force stop the Android app you're using from Quick Settings. No root, ADB, Shizuku or Internet permission.">
+<meta property="og:url" content="https://bl0ck154.github.io/ApKilla/">
+<meta property="og:image" content="https://bl0ck154.github.io/ApKilla/assets/hero.svg">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="canonical" href="https://bl0ck154.github.io/ApKilla/">
+<link rel="icon" type="image/svg+xml" href="assets/icon.svg">
+<title>ApKilla — Force stop an Android app in one tap</title>
+<style>
+:root{color-scheme:dark;--bg:#0d1421;--pane:#172339;--ink:#eef4fb;--muted:#a7b7ca;--line:#30445e;--accent:#fc786f;--green:#94e1c5;font-family:Inter,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+*{box-sizing:border-box}html{scroll-behavior:smooth}body{margin:0;background:var(--bg);color:var(--ink);line-height:1.6}
+a{color:inherit;text-decoration:none}a:focus-visible{outline:3px solid var(--accent);outline-offset:4px;border-radius:6px}
+.wrap{max-width:1100px;margin:0 auto;padding:0 24px}.topbar{position:sticky;top:0;z-index:5;background:rgba(13,20,33,.92);backdrop-filter:blur(16px);border-bottom:1px solid #29394b}
+.topbar>.wrap{display:flex;align-items:center;justify-content:space-between;min-height:74px;gap:20px}
+.brand{display:flex;align-items:center;gap:12px;font-size:22px;font-weight:800;letter-spacing:-.65px}.brand img{width:40px;height:40px}
+nav{display:flex;align-items:center;gap:26px;font-size:14px;font-weight:600;color:#c0cedd}nav a:hover,.textlink:hover{color:var(--accent)}
+.button{display:inline-flex;align-items:center;justify-content:center;gap:10px;min-height:48px;padding:0 21px;border-radius:13px;font-weight:750;font-size:15px;background:linear-gradient(125deg,#ff8b76,#ee5869);color:#141923;box-shadow:0 14px 32px #ec5f611f;transition:transform .15s}
+.button:hover{transform:translateY(-2px)}.button.secondary{background:#23344b;color:#e4eefa;box-shadow:none;border:1px solid #3b5067}
+.hero{padding-top:89px;padding-bottom:48px;display:grid;grid-template-columns:1.07fr .93fr;align-items:center;gap:35px}
+.eyebrow{color:var(--green);font-size:12px;font-weight:800;letter-spacing:.16em;text-transform:uppercase;display:inline-flex;align-items:center;gap:9px}
+.eyebrow:before{content:"";width:8px;height:8px;border-radius:50%;background:var(--green);box-shadow:0 0 15px var(--green)}
+h1{font-size:clamp(49px,6vw,78px);line-height:1.08;letter-spacing:-.065em;margin:23px 0}h1 span{color:var(--accent)}
+.lead{font-size:18px;color:#bbcbda;max-width:540px;margin-bottom:29px}.actions{display:flex;flex-wrap:wrap;gap:12px}.small{font-size:13px;color:#9fb0c3;margin-top:17px}
+.visual{background:radial-gradient(circle at 70% 45%,#ec677e22,transparent 65%);padding:15px}.visual img{max-width:100%;height:auto;display:block;border-radius:21px;box-shadow:0 26px 75px #0005}
+.notice{border:1px solid #4c4450;border-left:3px solid #fa8874;border-radius:13px;padding:18px 21px;background:#221e2b;color:#e1ced5;font-size:14px}
+.notice a{color:#ffc4b8;text-decoration:underline;text-underline-offset:3px}
+.section{padding-top:86px;padding-bottom:10px}.section h2{font-size:clamp(30px,4vw,43px);letter-spacing:-.045em;line-height:1.2;margin:0 0 16px}
+.section .intro{max-width:720px;color:var(--muted);margin:0 0 34px}
+.features{display:grid;grid-template-columns:repeat(3,1fr);gap:15px}.feature{background:var(--pane);border:1px solid #30445b;border-radius:20px;padding:26px}
+.symbol{width:42px;height:42px;border-radius:12px;display:grid;place-items:center;background:#304659;color:#ff9f8f;font-size:22px;margin-bottom:18px}
+.feature h3{font-size:20px;margin:0 0 8px;letter-spacing:-.02em}.feature p{font-size:14px;color:var(--muted);margin:0}
+.flow{display:block;width:100%;height:auto;box-shadow:0 10px 35px #0002;border-radius:18px}.note{font-size:13px;color:var(--muted);margin-top:13px}
+.steps{display:grid;grid-template-columns:repeat(4,1fr);gap:13px;counter-reset:step}
+.step{position:relative;padding:24px 19px;background:#152338;border:1px solid #2f425b;border-radius:17px}
+.step:before{counter-increment:step;content:counter(step);width:33px;height:33px;display:grid;place-items:center;border-radius:10px;background:#fb786f;color:#192033;font-weight:900;margin-bottom:20px}
+.step h3{font-size:17px;margin:0 0 7px}.step p{font-size:14px;color:var(--muted);margin:0}
+.downloadbox{background:linear-gradient(120deg,#1b2a41,#182032);border:1px solid #43526a;border-radius:25px;padding:32px;display:flex;gap:23px;align-items:center;justify-content:space-between}
+.downloadbox h3{font-size:27px;letter-spacing:-.03em;margin:0 0 6px}.downloadbox p{color:var(--muted);font-size:14px;max-width:650px;margin:0}
+.faq{display:grid;gap:12px}.faq details{border:1px solid var(--line);border-radius:15px;padding:17px 20px;background:#152237}
+.faq summary{cursor:pointer;font-weight:700}.faq p{color:var(--muted);margin:12px 0 0;font-size:15px}
+.footer{border-top:1px solid var(--line);margin-top:88px;padding:30px 0 49px;color:#9eadbe;font-size:13px}
+.footer .wrap{display:flex;flex-wrap:wrap;justify-content:space-between;gap:22px}.footer a{color:#dce5ef;text-decoration:underline;text-underline-offset:3px}
+@media(max-width:820px){nav{gap:13px}nav .hide-sm{display:none}.hero{padding-top:51px;grid-template-columns:1fr}.visual{padding:0}.features{grid-template-columns:1fr}.steps{grid-template-columns:repeat(2,1fr)}.section{padding-top:66px}.downloadbox{align-items:flex-start;flex-direction:column}}
+@media(max-width:480px){.wrap{padding:0 18px}.topbar>.wrap{min-height:64px}.brand{font-size:19px}.brand img{width:34px;height:34px}nav{font-size:13px}nav .hide-xs{display:none}.steps{grid-template-columns:1fr}h1{font-size:53px}.lead{font-size:16px}.button{width:100%}.downloadbox{padding:23px}.hero{gap:13px}}
+@media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}.button{transition:none}}
+</style>
+</head>
+<body>
+<header class="topbar">
+<div class="wrap"><a class="brand" href="#top" aria-label="ApKilla home"><img src="assets/icon.svg" alt="">ApKilla</a>
+<nav aria-label="Primary navigation"><a class="hide-sm" href="#how-it-works">How it works</a><a class="hide-xs" href="#setup">Setup</a><a href="https://github.com/Bl0ck154/ApKilla" rel="noopener">GitHub ↗</a></nav>
+</div>
+</header>
+<main id="top">
+<div class="wrap">
+<section class="hero" aria-labelledby="headline">
+<div>
+<div class="eyebrow">Small tool. One job.</div>
+<h1 id="headline">Force stop.<br><span>One tap.</span></h1>
+<p class="lead">Stop the Android app you're using straight from Quick Settings. No root, ADB, Shizuku or Tasker. Everything runs locally.</p>
+<div class="actions"><a class="button" href="https://github.com/Bl0ck154/ApKilla/releases/latest">↓ Download stable APK</a><a class="button secondary" href="https://github.com/Bl0ck154/ApKilla">View source ↗</a></div>
+<p class="small">Android 7.0+ · No Internet permission · MIT open source</p>
+</div>
+<div class="visual"><img src="assets/hero.svg" alt="Illustrated Android Quick Settings tile labeled Kill app" width="1200" height="420"></div>
+</section>
+<aside class="notice"><strong>Release status:</strong> v0.3.5 is the latest public stable release. v0.4.0 improvements are merged and CI-tested, with a signed <a href="https://github.com/Bl0ck154/ApKilla/issues/11">device-test build available here</a>. The test build is not a public stable release.</aside>
+<section class="section" aria-labelledby="features-heading">
+<h2 id="features-heading">Made for the moment an app misbehaves</h2>
+<p class="intro">Instead of searching through Android settings for Force stop, bring down your notification shade and tap one tile.</p>
+<div class="features">
+<div class="feature"><div class="symbol" aria-hidden="true">↗</div><h3>Quick Settings shortcut</h3><p>Trigger the force-stop workflow while the target app is on screen.</p></div>
+<div class="feature"><div class="symbol" aria-hidden="true">◇</div><h3>No root required</h3><p>Uses Android's own App info screen. No debugging bridge or other helper tools.</p></div>
+<div class="feature"><div class="symbol" aria-hidden="true">✓</div><h3>Offline by design</h3><p>No account, tracking SDK or Internet permission. Your operations stay on your phone.</p></div>
+</div>
+</section>
+<section class="section" id="how-it-works" aria-labelledby="how-heading"><h2 id="how-heading">How it works</h2><p class="intro">ApKilla uses an Accessibility service to open the current app's system information and tap the built-in Force stop controls. Android Settings may appear briefly.</p>
+<img class="flow" src="assets/flow.svg" alt="Open an app, tap Kill app in Quick Settings, then Android opens App info" width="1080" height="248">
+<p class="note">Illustrated workflow, not actual phone screenshots. OEM controls and behavior may vary.</p>
+</section>
+<section class="section" id="setup" aria-labelledby="setup-heading"><h2 id="setup-heading">Start in four steps</h2>
+<div class="steps">
+<div class="step"><h3>Install the APK</h3><p>Get the signed stable version from GitHub Releases.</p></div>
+<div class="step"><h3>Allow Accessibility</h3><p>Enable ApKilla automation once in Android Settings.</p></div>
+<div class="step"><h3>Add the tile</h3><p>Put Kill app into the Quick Settings panel.</p></div>
+<div class="step"><h3>Tap when needed</h3><p>Use an app, open Quick Settings and select Kill app.</p></div>
+</div>
+</section>
+<section class="section" id="download" aria-labelledby="download-heading"><h2 id="download-heading">Get ApKilla</h2>
+<div class="downloadbox"><div><h3>Free and open source</h3><p>Download the latest public signed APK. Test versions and their validation status are documented separately on GitHub. The project uses a consistent signing certificate for upgrades.</p></div><a class="button" href="https://github.com/Bl0ck154/ApKilla/releases/latest">↓ Get APK</a></div>
+</section>
+<section class="section" aria-labelledby="faq-heading"><h2 id="faq-heading">Common questions</h2>
+<div class="faq">
+<details><summary>Does this really force-stop an app?</summary><p>It automates Android's standard Force stop UI. The result depends on the phone and app. A successful confirmation tap alone cannot independently prove that the package stopped.</p></details>
+<details><summary>Why does ApKilla need Accessibility?</summary><p>Android does not allow a regular app to force-stop another through a public API. Accessibility lets ApKilla find and tap controls in Android's own Settings interface. Read the <a href="https://github.com/Bl0ck154/ApKilla/blob/main/PRIVACY.md">privacy explanation</a> before enabling it.</p></details>
+<details><summary>Will it work on my phone?</summary><p>Android 7.0+ is required, but manufacturers customize Settings and background service behavior. Consult the <a href="https://github.com/Bl0ck154/ApKilla/blob/main/COMPATIBILITY.md">compatibility notes</a> and report issues with your model and Android version.</p></details>
+<details><summary>Does it use the Internet or send usage data?</summary><p>No Internet permission, account, analytics or telemetry. The foreground-app target is stored locally to perform the action. The v0.4.0 QA build also stores limited outcome history locally.</p></details>
+</div>
+</section>
+</div>
+</main>
+<footer class="footer"><div class="wrap"><span>© 2026 ApKilla · <a href="https://github.com/Bl0ck154/ApKilla/blob/main/LICENSE">MIT license</a></span><span><a href="https://github.com/Bl0ck154/ApKilla/issues/new/choose">Bug reports</a> · <a href="https://github.com/Bl0ck154/ApKilla/blob/main/TROUBLESHOOTING.md">Help</a> · <a href="https://github.com/Bl0ck154/ApKilla/blob/main/PRIVACY.md">Privacy</a></span></div></footer>
+</body>
+</html>
