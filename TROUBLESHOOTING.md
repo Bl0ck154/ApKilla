@@ -23,3 +23,9 @@ Never upload a full accessibility screen dump containing private messages, accou
 ## The app says "Force stop requested" but nothing changed
 
 That status confirms a UI request, **not** a verified package stop. Protected apps may reject Force stop, and another app can immediately restart a process. This is a known limitation; attach your Android build and steps to a bug report.
+
+## v0.4.1 candidate: target verification
+
+This pending version refuses to press **Force stop** unless the Settings app info header identifies the intended app. Some OEM layouts or Android package-visibility restrictions may prevent the check from succeeding, in which case the action fails safely with **Target could not be verified**. Please report the phone and Android/OEM version. No broad installed-app visibility permission is requested.
+
+Android 11+ launcher-app visibility is declared using a scoped `<queries>` intent. It does not grant the `QUERY_ALL_PACKAGES` permission; apps without launchable activities may still be unverifiable.
