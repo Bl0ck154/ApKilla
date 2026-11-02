@@ -21,7 +21,7 @@ final class AppInfoVerifier {
         if (root == null || target == null || target.isEmpty()) return false;
 
         // Android 11+ package visibility can hide some third-party labels.
-        // Do not request QUERY_ALL_PACKAGES: when a label is unavailable, only
+        // The manifest scopes visibility to launchable apps; when a label is unavailable, only
         // the exact package identifier in the visible header is sufficient.
         String label = null;
         try {
