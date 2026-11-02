@@ -55,7 +55,7 @@ h1{font-size:clamp(49px,6vw,78px);line-height:1.08;letter-spacing:-.065em;margin
 @media(max-width:480px){.wrap{padding:0 18px}.topbar>.wrap{min-height:64px}.brand{font-size:19px}.brand img{width:34px;height:34px}nav{font-size:13px}nav .hide-xs{display:none}.steps{grid-template-columns:1fr}h1{font-size:53px}.lead{font-size:16px}.button{width:100%}.downloadbox{padding:23px}.hero{gap:13px}}
 @media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}.button{transition:none}}
 </style>
-<script type="application/ld+json">{"@context":"https://schema.org","@type":"SoftwareApplication","name":"ApKilla","applicationCategory":"UtilitiesApplication","operatingSystem":"Android 7.0 or later","softwareVersion":"0.3.5","offers":{"@type":"Offer","price":"0","priceCurrency":"USD"},"downloadUrl":"https://github.com/Bl0ck154/ApKilla/releases/latest","codeRepository":"https://github.com/Bl0ck154/ApKilla","license":"https://github.com/Bl0ck154/ApKilla/blob/main/LICENSE","description":"ApKilla is an offline Android Quick Settings utility that automates the system Force stop control without root, ADB, Shizuku, Tasker, or Internet permission."}</script>
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"SoftwareApplication","name":"ApKilla","applicationCategory":"UtilitiesApplication","operatingSystem":"Android 7.0 or later","softwareVersion":"0.4.0","offers":{"@type":"Offer","price":"0","priceCurrency":"USD"},"downloadUrl":"https://github.com/Bl0ck154/ApKilla/releases/latest","codeRepository":"https://github.com/Bl0ck154/ApKilla","license":"https://github.com/Bl0ck154/ApKilla/blob/main/LICENSE","description":"ApKilla is an offline Android Quick Settings utility that automates the system Force stop control without root, ADB, Shizuku, Tasker, or Internet permission."}</script>
 </head>
 <body>
 <header class="topbar">
@@ -75,7 +75,7 @@ h1{font-size:clamp(49px,6vw,78px);line-height:1.08;letter-spacing:-.065em;margin
 </div>
 <div class="visual"><img src="assets/phone.svg" alt="Illustrated Android Quick Settings panel with highlighted Kill app tile" width="520" height="620"></div>
 </section>
-<aside class="notice"><strong>Release status:</strong> v0.3.5 is the latest public stable release. v0.4.0 improvements are merged and CI-tested, with a signed <a href="https://github.com/Bl0ck154/ApKilla/issues/11">device-test build available here</a>. The test build is not a public stable release.</aside>
+<aside class="notice"><strong>Latest stable:</strong> ApKilla v0.4.0 includes improved Accessibility reconnect handling and local operation diagnostics. <a href="https://github.com/Bl0ck154/ApKilla/releases/tag/v0.4.0">Read the release notes and download the signed APK.</a></aside>
 <section class="section" aria-labelledby="features-heading">
 <h2 id="features-heading">Made for the moment an app misbehaves</h2>
 <p class="intro">Instead of searching through Android settings for Force stop, bring down your notification shade and tap one tile.</p>
@@ -98,14 +98,14 @@ h1{font-size:clamp(49px,6vw,78px);line-height:1.08;letter-spacing:-.065em;margin
 </div>
 </section>
 <section class="section" id="download" aria-labelledby="download-heading"><h2 id="download-heading">Get ApKilla</h2>
-<div class="downloadbox"><div><h3>Free and open source</h3><p>Download the latest public signed APK. Test versions and their validation status are documented separately on GitHub. The project uses a consistent signing certificate for upgrades.</p></div><a class="button" href="https://github.com/Bl0ck154/ApKilla/releases/latest">↓ Get APK</a></div>
+<div class="downloadbox"><div><h3>Free and open source</h3><p>Download the latest public signed APK. The project uses a consistent signing certificate for upgrades.</p></div><a class="button" href="https://github.com/Bl0ck154/ApKilla/releases/latest">↓ Get APK</a></div>
 </section>
 <section class="section" aria-labelledby="faq-heading"><h2 id="faq-heading">Common questions</h2>
 <div class="faq">
 <details><summary>Does this really force-stop an app?</summary><p>It automates Android's standard Force stop UI. The result depends on the phone and app. A successful confirmation tap alone cannot independently prove that the package stopped.</p></details>
 <details><summary>Why does ApKilla need Accessibility?</summary><p>Android does not allow a regular app to force-stop another through a public API. Accessibility lets ApKilla find and tap controls in Android's own Settings interface. Read the <a href="https://github.com/Bl0ck154/ApKilla/blob/main/PRIVACY.md">privacy explanation</a> before enabling it.</p></details>
 <details><summary>Will it work on my phone?</summary><p>Android 7.0+ is required, but manufacturers customize Settings and background service behavior. Consult the <a href="https://github.com/Bl0ck154/ApKilla/blob/main/COMPATIBILITY.md">compatibility notes</a> and report issues with your model and Android version.</p></details>
-<details><summary>Does it use the Internet or send usage data?</summary><p>No Internet permission, account, analytics or telemetry. The foreground-app target is stored locally to perform the action. The v0.4.0 QA build also stores limited outcome history locally.</p></details>
+<details><summary>Does it use the Internet or send usage data?</summary><p>No Internet permission, account, analytics or telemetry. The foreground-app target is stored locally to perform the action. Version 0.4.0 also stores limited outcome history locally.</p></details>
 </div>
 </section>
 </div>
