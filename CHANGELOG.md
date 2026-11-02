@@ -1,5 +1,13 @@
 # Changelog
 
+## Unreleased (candidate v0.4.1)
+
+- Verify the target app identity on the App info screen before pressing Force stop.
+- Recognize disabled Force stop controls without pointless retries.
+- Invalidate the remembered foreground target on Accessibility interruption.
+- Add app identity regression tests. Not yet released.
+
+
 ## v0.4.0 — 2026-11-02
 
 - Refuse stale targets after service disconnect or process restart.

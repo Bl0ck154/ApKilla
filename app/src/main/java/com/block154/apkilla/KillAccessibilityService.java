@@ -28,6 +28,7 @@ public class KillAccessibilityService extends AccessibilityService {
     private final Set<String> homePackages = new HashSet<>();
     private boolean automationScheduled = false;
     private boolean waitingForConfirmation = false;
+    private boolean appInfoVerified = false;
     private long activeRequestAt = -1L;
     private long lastTileRefreshAt = 0L;
 
@@ -126,8 +127,10 @@ public class KillAccessibilityService extends AccessibilityService {
         handler.removeCallbacksAndMessages(null);
         automationScheduled = false;
         waitingForConfirmation = false;
+        if (Prefs.hasPendingKill(this)) StopHistory.record(this, "Interrupted");
         Prefs.clearPendingKill(this);
-        StopHistory.record(this, "Interrupted");
+        Prefs.markNoForegroundTarget(this);
+        appInfoVerified = false;
     }
 
     @Override
@@ -195,6 +198,7 @@ public class KillAccessibilityService extends AccessibilityService {
         if (activeRequestAt != requestAt) {
             activeRequestAt = requestAt;
             waitingForConfirmation = false;
+            appInfoVerified = false;
         }
 
         AccessibilityNodeInfo root = getRootInActiveWindow();
@@ -221,6 +225,13 @@ public class KillAccessibilityService extends AccessibilityService {
                 return;
             }
 
+            // Settings owns many screens. Never click until the App info title
+            // identifies our pending target, even if a Force stop button exists.
+            if (!AppInfoVerifier.isExpectedTarget(this, root, target)) {
+                failAutomation("Target could not be verified");
+                return;
+            }
+            appInfoVerified = true;
             if (!forceStop.isEnabled()) {
                 finishAutomation("Force stop unavailable");
                 return;
@@ -236,6 +247,10 @@ public class KillAccessibilityService extends AccessibilityService {
             return;
         }
 
+        if (!appInfoVerified) {
+            failAutomation("Target could not be verified");
+            return;
+        }
         AccessibilityNodeInfo confirm = findConfirmationButton(root);
         if (confirm != null && confirm.isEnabled() && clickNode(confirm)) {
             // Clicking the confirmation is not proof that Android stopped the app.
@@ -276,6 +291,7 @@ public class KillAccessibilityService extends AccessibilityService {
         Prefs.clearPendingKill(this);
         Prefs.markNoForegroundTarget(this);
         waitingForConfirmation = false;
+        appInfoVerified = false;
         activeRequestAt = -1L;
         StopHistory.record(this, result);
         requestTileRefresh(true);
@@ -339,8 +355,7 @@ public class KillAccessibilityService extends AccessibilityService {
         while (!queue.isEmpty()) {
             AccessibilityNodeInfo node = queue.removeFirst();
             String id = node.getViewIdResourceName();
-            if (id != null && id.toLowerCase(Locale.ROOT).contains(wanted) && node.isVisibleToUser()
-                    && node.isEnabled()) {
+            if (id != null && id.toLowerCase(Locale.ROOT).contains(wanted) && node.isVisibleToUser()) {
                 return node;
             }
             for (int i = 0; i < node.getChildCount(); i++) {
@@ -360,14 +375,14 @@ public class KillAccessibilityService extends AccessibilityService {
             CharSequence text = node.getText();
             if (text != null) {
                 String value = normalize(text.toString());
-                if (value.equals(wanted) && node.isVisibleToUser() && node.isEnabled()) {
+                if (value.equals(wanted) && node.isVisibleToUser()) {
                     return node;
                 }
             }
             CharSequence description = node.getContentDescription();
             if (description != null) {
                 String value = normalize(description.toString());
-                if (value.equals(wanted) && node.isVisibleToUser() && node.isEnabled()) {
+                if (value.equals(wanted) && node.isVisibleToUser()) {
                     return node;
                 }
             }
