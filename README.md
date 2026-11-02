@@ -27,9 +27,9 @@ ApKilla is a small, offline Android app that opens the system **App info** scree
 | :--- | :--- | :--- |
 | Tap the tile while using an app. | No ADB, Shizuku, wireless debugging, or Tasker. | No Internet permission, analytics, account, or telemetry. |
 
-<p align="center"><img src="docs/assets/flow.svg" alt="Illustration of the three-step ApKilla flow" width="100%"></p>
+<p align="center"><img src="docs/assets/quick-demo.gif" alt="Illustrated ApKilla workflow: open an app, tap Kill app in Quick Settings, then ApKilla handles Android confirmation automatically" width="900"></p>
 
-<sub>Illustrative diagram, not a real device screenshot. Android Settings may flash briefly.</sub>
+<sub>Concept animation, not a screen recording. Android interfaces vary by device; **only the Kill app tile requires your tap**. [Static diagram](docs/assets/flow.svg).</sub>
 
 ## Getting started
 
