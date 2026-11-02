@@ -1,65 +1,65 @@
 # ApKilla
 
-A tiny Android utility that **force-stops the app you are using from a Quick Settings tile** without root, ADB, Shizuku or Tasker.
+**Force-stop the Android app you're using from a Quick Settings tile.**
 
-## Quick access
+ApKilla opens the selected app's Android **App info** screen and uses Accessibility to tap **Force stop** and confirm. You tap the **Kill app** tile once. The Settings screen may briefly appear during the process.
 
-ApKilla uses one primary entry point:
+No root, ADB, wireless debugging, Shizuku, Tasker, account, or Internet permission.
 
-- **Quick Settings tile** — while using an app, pull down the notification shade and tap **Kill app**.
+[**Download the signed APK**](https://github.com/Bl0ck154/ApKilla/releases/latest) · [Report a bug](https://github.com/Bl0ck154/ApKilla/issues/new/choose) · [How it works](#how-it-works)
 
-The experimental **Kill last** launcher/home-screen shortcut was removed because Android/OEM Accessibility window events are not reliable enough to reconstruct the previously used app after returning Home.
+![ApKilla Quick Settings flow illustration](docs/quick-settings-flow.svg)
+
+## Set up
+
+1. Download the latest signed APK from [GitHub Releases](https://github.com/Bl0ck154/ApKilla/releases).
+2. Open ApKilla and enable **ApKilla automation** under Android's Accessibility settings.
+3. Add **Kill app** to Quick Settings, then return to the app you want to stop.
+4. Pull down Quick Settings and tap **Kill app**.
+
+ApKilla must be able to observe the current foreground app before opening Quick Settings. If it cannot determine a safe target, it refuses the operation. If Accessibility is disconnected, open ApKilla and check whether Android has disabled its service.
 
 ## How it works
 
-Android does not let a normal third-party app directly call `force-stop` on another package. ApKilla uses an Accessibility service instead:
+A regular Android app cannot silently force-stop another package through a public Android API. ApKilla automates the phone's built-in App info screen:
 
-1. It tracks the current foreground app while you are using it.
-2. You open Quick Settings and tap **Kill app**.
-3. ApKilla opens that package's system **App info** screen.
-4. Accessibility clicks **Force stop** and the confirmation button automatically.
-5. It returns from Settings.
+1. An Accessibility service tracks foreground window changes.
+2. The Quick Settings tile uses the current, live foreground target.
+3. Android opens that package's **App info** screen.
+4. ApKilla finds **Force stop** and the confirmation control.
+5. The app records whether the request was sent or failed. A successful tap is **not** independently verified as a completed force-stop.
 
-The Settings screen can flash briefly. From the user's side it is still one action.
+The automation intentionally avoids system UI, launchers, Settings, and ApKilla itself. It won't kill an old remembered app after an Accessibility disconnect. A request expires after 10 seconds.
 
-## Setup
+## Compatibility and limitations
 
-1. Install the APK and open **ApKilla** once.
-2. Enable **ApKilla automation** in Accessibility.
-3. Add the **Kill app** Quick Settings tile.
+- Requires Android 7.0+ (API 24).
+- Uses the Android Accessibility service. Its connection, Settings layout, and Force stop dialogs vary by OEM and Android release.
+- The app currently includes button selectors for standard Android plus some translated controls; **no device-wide compatibility claim is made**.
+- If your phone restricts background Accessibility services, Android may disable or disconnect ApKilla until you re-enable it.
+- Some protected/system apps cannot be stopped through Android Settings.
+- A tap on a confirmation control is not proof that the process stopped. If the app stays active, report your device and Android version.
 
-The setup rows disappear once Android confirms the corresponding setup step.
+See [Troubleshooting](TROUBLESHOOTING.md) and [Compatibility](COMPATIBILITY.md). You can use **Copy diagnostics** in ApKilla to copy a local, app-name-free operation history into a bug report.
 
-## Reliability
+## Privacy
 
-- Accessibility service rebinds no longer erase the remembered foreground target.
-- `TYPE_WINDOW_CONTENT_CHANGED` events are used for Settings automation but are not trusted to replace the foreground app target.
-- The Quick Settings tile is always treated as an action tile and remains interactable; readiness is checked when the user taps it.
-- If the foreground flag is briefly lost because the Accessibility service is being rebound, a recently tracked safe app can still be used.
-- Tile presence is remembered from `onTileAdded()`, `onStartListening()` and Android 13+ tile-placement callbacks.
-- The app includes a **Repair / add tile again** action for OEMs that remove a custom tile.
+ApKilla has **no Internet permission** and no analytics or telemetry. It stores the last foreground package locally to drive the Quick Settings action, and it stores a small local history of operation outcomes without package names. Nothing is uploaded. See [PRIVACY.md](PRIVACY.md).
 
-## Safety / behavior
+Accessibility access is powerful. Review the [source code](app/src/main/java/com/block154/apkilla/KillAccessibilityService.java) before enabling it if you are unsure.
 
-- No root.
-- No ADB / wireless debugging.
-- No Shizuku.
-- No Internet permission and no network code.
-- Does not try to kill System UI, Settings, the launcher, or ApKilla itself.
-- A pending kill request expires after 10 seconds.
+## Build and test
 
-## OEM compatibility
-
-The primary selector looks for Settings view IDs containing `force_stop`, which is more stable than matching visible text. Text fallbacks are included for English, Ukrainian, Russian, Lithuanian and Polish. The positive confirmation button is primarily detected by the standard `android:id/button1` ID.
-
-Android skins can still rename or restructure the App info screen. If a specific Realme/ColorOS version does not match, capture the Settings UI hierarchy and add its button ID/text to `KillAccessibilityService`.
-
-## Build
-
-Requires Android SDK 35, JDK 17 and Gradle 8.9.
+Requires Android SDK 35, JDK 17, and Gradle 8.9.
 
 ```bash
-gradle :app:assembleRelease
+gradle :app:testDebugUnitTest :app:assembleDebug
 ```
 
-Signed releases are built in GitHub Actions with the permanent ApKilla signing certificate.
+Signed release APKs are produced by GitHub Actions from explicit `v*` tags. Release signing uses a permanent key stored in GitHub Secrets and verified against a published certificate fingerprint; see [SIGNING.md](SIGNING.md). The private key is never committed.
+
+## Contribute
+
+Bug reports with the phone model, Android version, OEM skin, and reproducible steps are particularly useful. Do not post sensitive screen contents or personal data in logs.
+
+See [CONTRIBUTING.md](CONTRIBUTING.md), [CHANGELOG.md](CHANGELOG.md), and the [MIT license](LICENSE).

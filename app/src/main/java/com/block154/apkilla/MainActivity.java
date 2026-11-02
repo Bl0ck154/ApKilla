@@ -1,6 +1,8 @@
 package com.block154.apkilla;
 
 import android.app.Activity;
+import android.content.ClipData;
+import android.content.ClipboardManager;
 import android.app.StatusBarManager;
 import android.content.ComponentName;
 import android.content.Intent;
@@ -39,6 +41,7 @@ public class MainActivity extends Activity {
     private TextView badgeView;
     private TextView automationValue;
     private TextView tileValue;
+    private TextView lastActionValue;
     private TextView setupLabel;
     private LinearLayout setupCard;
     private View accessibilityAction;
@@ -149,6 +152,8 @@ public class MainActivity extends Activity {
         automationValue = addStatusRow(statusCard, getString(R.string.status_automation), getString(R.string.status_checking));
         addDivider(statusCard);
         tileValue = addStatusRow(statusCard, getString(R.string.status_quick_settings), getString(R.string.status_checking));
+        addDivider(statusCard);
+        lastActionValue = addStatusRow(statusCard, getString(R.string.status_last_action), getString(R.string.status_no_operations));
         content.addView(statusCard);
 
         setupLabel = sectionLabel(getString(R.string.section_setup));
@@ -188,6 +193,14 @@ public class MainActivity extends Activity {
                 false,
                 v -> startActivity(new Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS))
         );
+        addDivider(quickCard);
+        addActionRow(
+                quickCard,
+                getString(R.string.action_copy_diagnostics),
+                getString(R.string.action_copy_diagnostics_desc),
+                false,
+                v -> copyDiagnostics()
+        );
         content.addView(quickCard);
 
         TextView note = label(getString(R.string.note), 13f, MUTED, Typeface.NORMAL);
@@ -216,6 +229,7 @@ public class MainActivity extends Activity {
             automationValue.setTextColor(AMBER);
         }
 
+        lastActionValue.setText(StopHistory.lastSummary(this));
         tileValue.setText(tileAdded ? R.string.status_added : R.string.status_not_confirmed);
         tileValue.setTextColor(tileAdded ? GREEN : MUTED);
 
@@ -260,6 +274,18 @@ public class MainActivity extends Activity {
         } else {
             Toast.makeText(this, R.string.add_tile_manual, Toast.LENGTH_LONG).show();
         }
+    }
+
+    private void copyDiagnostics() {
+        ClipboardManager clipboard = (ClipboardManager) getSystemService(CLIPBOARD_SERVICE);
+        if (clipboard == null) return;
+        String report = "ApKilla 0.4.0\nAndroid " + Build.VERSION.RELEASE
+                + " (API " + Build.VERSION.SDK_INT + ")\nDevice "
+                + Build.MANUFACTURER + " " + Build.MODEL
+                + "\nAccessibility connected: " + KillAccessibilityService.isConnected()
+                + "\nRecent operations (local only):\n" + StopHistory.exportLocal(this);
+        clipboard.setPrimaryClip(ClipData.newPlainText("ApKilla diagnostics", report));
+        Toast.makeText(this, R.string.diagnostics_copied, Toast.LENGTH_SHORT).show();
     }
 
     private TextView addStatusRow(LinearLayout parent, String title, String initialValue) {

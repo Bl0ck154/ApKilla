@@ -1,47 +1,47 @@
-name: Signed Release APK
+name: Signed release APK
 
+# Release only explicitly versioned tags. Never run signing/publishing from
+# untrusted issues or pull requests; never overwrite an existing public APK.
 on:
   push:
-    branches: [ main ]
-  pull_request:
-    branches: [ main ]
-  issues:
-    types: [opened]
-  workflow_dispatch:
+    tags: ['v*']
+
+env:
+  ANDROID_HOME: /usr/local/lib/android/sdk
+  ANDROID_SDK_ROOT: /usr/local/lib/android/sdk
+
+permissions:
+  contents: write
+
+concurrency:
+  group: apkilla-release-${{ github.ref }}
+  cancel-in-progress: false
 
 jobs:
-  build-release:
-    if: ${{ github.event_name != 'issues' || github.event.issue.title == '[build] ApKilla signed release' }}
+  release:
     runs-on: ubuntu-latest
-    permissions:
-      contents: write
+    timeout-minutes: 20
     steps:
       - uses: actions/checkout@v4
-
-      - name: Resolve app version
-        id: version
+      - name: Verify release version
         shell: bash
         run: |
           set -euo pipefail
           VERSION=$(sed -n "s/.*versionName '\([^']*\)'.*/\1/p" app/build.gradle | head -n1)
           test -n "$VERSION"
-          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
-          echo "apk=ApKilla-$VERSION-release.apk" >> "$GITHUB_OUTPUT"
-
-      - uses: actions/setup-java@v4
+          test "$GITHUB_REF_NAME" = "v$VERSION"
+      - uses: actions/setup-java@v5
         with:
           distribution: temurin
           java-version: '17'
-
-      - uses: android-actions/setup-android@v3
-
+      - uses: android-actions/setup-android@v4
+        with:
+          packages: ''
       - name: Install Android SDK 35
         run: sdkmanager "platforms;android-35" "build-tools;35.0.0"
-
       - uses: gradle/actions/setup-gradle@v4
         with:
           gradle-version: '8.9'
-
       - name: Restore signing key
         env:
           KEYSTORE_B64: ${{ secrets.APKILLA_KEYSTORE_B64 }}
@@ -52,74 +52,28 @@ jobs:
           test -n "$KEYSTORE_B64"
           test -n "$KEYSTORE_PASSWORD"
           printf '%s' "$KEYSTORE_B64" | base64 --decode > "$RUNNER_TEMP/apkilla-release.jks"
-
-      - name: Build release APK
+      - name: Test and build signed APK
         env:
           APKILLA_KEYSTORE_PATH: ${{ runner.temp }}/apkilla-release.jks
           APKILLA_KEYSTORE_PASSWORD: ${{ secrets.APKILLA_KEYSTORE_PASSWORD }}
         shell: bash
-        run: |
-          set -o pipefail
-          gradle :app:assembleRelease --stacktrace 2>&1 | tee build.log
-
-      - name: Verify permanent signing certificate
+        run: gradle --no-daemon :app:testDebugUnitTest :app:assembleRelease --stacktrace
+      - name: Verify signing certificate
         shell: bash
         run: |
           set -euo pipefail
-          set -o pipefail
-          "$ANDROID_HOME/build-tools/35.0.0/apksigner" verify --verbose --print-certs app/build/outputs/apk/release/app-release.apk 2>&1 | tee signing.txt
-          grep -qi '9dcc58ef2da758659aa29861d6d7baacc17cfcdd970a07b5fc7455e1feac1cfa' signing.txt
-          touch "$RUNNER_TEMP/apkilla-signing-ok"
-
-      - name: Rename APK
-        run: cp app/build/outputs/apk/release/app-release.apk "${{ steps.version.outputs.apk }}"
-
-      - uses: actions/upload-artifact@v4
-        with:
-          name: ${{ steps.version.outputs.apk }}
-          path: ${{ steps.version.outputs.apk }}
-
-      - name: Publish signed release
-        if: ${{ github.event_name == 'push' || github.event_name == 'issues' || github.event_name == 'workflow_dispatch' }}
+          "$ANDROID_HOME/build-tools/35.0.0/apksigner" verify --verbose --print-certs app/build/outputs/apk/release/app-release.apk > "$RUNNER_TEMP/signing.txt"
+          grep -qi '9dcc58ef2da758659aa29861d6d7baacc17cfcdd970a07b5fc7455e1feac1cfa' "$RUNNER_TEMP/signing.txt"
+      - name: Publish immutable versioned APK
         env:
           GH_TOKEN: ${{ github.token }}
         shell: bash
         run: |
           set -euo pipefail
-          VERSION="${{ steps.version.outputs.version }}"
-          APK="${{ steps.version.outputs.apk }}"
-          TAG="v$VERSION"
+          TAG="$GITHUB_REF_NAME"
           if gh release view "$TAG" >/dev/null 2>&1; then
-            gh release upload "$TAG" "$APK" --clobber
-          else
-            gh release create "$TAG" "$APK" --title "ApKilla $VERSION" --notes "Signed release build using the permanent ApKilla certificate."
+            echo "Release already exists; refusing to replace its APK." >&2
+            exit 1
           fi
-
-      - name: Persist release diagnostics
-        if: ${{ always() && (github.event_name == 'push' || github.event_name == 'issues' || github.event_name == 'workflow_dispatch') }}
-        shell: bash
-        run: |
-          set -euo pipefail
-          VERSION="${{ steps.version.outputs.version }}"
-          APK="${{ steps.version.outputs.apk }}"
-          mkdir -p dist
-          cp build.log dist/release-build.log 2>/dev/null || true
-          cp signing.txt dist/release-signing.txt 2>/dev/null || true
-
-          if [ -f app/build/outputs/apk/release/app-release.apk ] && [ -f "$RUNNER_TEMP/apkilla-signing-ok" ]; then
-            cp app/build/outputs/apk/release/app-release.apk "dist/$APK"
-            printf 'SUCCESS\n' > dist/release-build-status.txt
-          else
-            rm -f "dist/$APK"
-            printf 'FAILED\n' > dist/release-build-status.txt
-          fi
-
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add dist
-          if git diff --cached --quiet; then
-            exit 0
-          fi
-          git commit -m "Persist ApKilla $VERSION release result [skip ci]"
-          git pull --rebase origin main
-          git push origin HEAD:main
+          cp app/build/outputs/apk/release/app-release.apk "ApKilla-${TAG#v}-release.apk"
+          gh release create "$TAG" "ApKilla-${TAG#v}-release.apk" --verify-tag --title "ApKilla ${TAG#v}" --generate-notes

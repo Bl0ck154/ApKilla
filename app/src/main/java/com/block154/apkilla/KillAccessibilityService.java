@@ -18,8 +18,8 @@ import java.util.Set;
 
 public class KillAccessibilityService extends AccessibilityService {
     private static final long REQUEST_TIMEOUT_MS = 10_000L;
-    private static final int MAX_RETRIES = 24;
-    private static final long RETRY_DELAY_MS = 80L;
+    private static final int MAX_RETRIES = 45;
+    private static final long RETRY_DELAY_MS = 150L;
     private static final long TILE_REFRESH_DEBOUNCE_MS = 250L;
 
     private static volatile boolean connected = false;
@@ -38,14 +38,20 @@ public class KillAccessibilityService extends AccessibilityService {
             "принудительно остановить",
             "остановить",
             "priverstinai sustabdyti",
-            "wymuś zatrzymanie"
+            "wymuś zatrzymanie",
+            "stopp erzwingen", "beenden erzwingen",
+            "forzar detención", "forzar parada",
+            "forcer l'arrêt", "forçar paragem", "forçar parada"
     );
 
     private static final List<String> CONFIRM_TEXTS = Arrays.asList(
             "ok", "okay", "yes", "так", "да",
             "force stop", "примусово зупинити", "зупинити",
             "принудительно остановить", "остановить",
-            "priverstinai sustabdyti", "wymuś zatrzymanie"
+            "priverstinai sustabdyti", "wymuś zatrzymanie",
+            "stopp erzwingen", "beenden erzwingen",
+            "forzar detención", "forzar parada", "forcer l'arrêt",
+            "forçar paragem", "forçar parada"
     );
 
     static boolean isConnected() {
@@ -57,11 +63,19 @@ public class KillAccessibilityService extends AccessibilityService {
         super.onServiceConnected();
         connected = true;
         refreshHomePackages();
+        // A persisted target must never be trusted after a process restart/rebind.
+        Prefs.markNoForegroundTarget(this);
+        AccessibilityNodeInfo current = getRootInActiveWindow();
+        if (current != null && current.getPackageName() != null) {
+            trackForegroundPackage(current.getPackageName().toString());
+        }
 
         long pendingAt = Prefs.getPendingAt(this);
-        if (pendingAt > 0L && System.currentTimeMillis() - pendingAt > REQUEST_TIMEOUT_MS) {
+        if (pendingAt > 0L && StopPolicy.isExpired(pendingAt, System.currentTimeMillis(), REQUEST_TIMEOUT_MS)) {
             Prefs.clearPendingKill(this);
+            StopHistory.record(this, "Timed out");
         }
+        if (Prefs.hasPendingKill(this)) scheduleAutomation();
         requestTileRefresh(true);
     }
 
@@ -78,7 +92,9 @@ public class KillAccessibilityService extends AccessibilityService {
 
         String packageName = event.getPackageName().toString();
         if (Prefs.hasPendingKill(this)) {
-            if (isSettingsPackage(packageName) || "android".equals(packageName)) {
+            if (StopPolicy.isExpired(Prefs.getPendingAt(this), System.currentTimeMillis(), REQUEST_TIMEOUT_MS)) {
+                failAutomation("Timed out");
+            } else if (isSettingsPackage(packageName) || "android".equals(packageName)) {
                 scheduleAutomation();
             }
             return;
@@ -92,6 +108,16 @@ public class KillAccessibilityService extends AccessibilityService {
             return;
         }
 
+        // WINDOW changes may describe IME/overlay windows rather than the app.
+        // Prefer the actual active root when it belongs to a normal activity.
+        AccessibilityNodeInfo activeRoot = getRootInActiveWindow();
+        if (activeRoot != null && activeRoot.getPackageName() != null) {
+            String activePackage = activeRoot.getPackageName().toString();
+            if (!"com.android.systemui".equals(activePackage) &&
+                    !TargetResolver.isInputMethodTarget(this, activePackage)) {
+                packageName = activePackage;
+            }
+        }
         trackForegroundPackage(packageName);
     }
 
@@ -99,11 +125,15 @@ public class KillAccessibilityService extends AccessibilityService {
     public void onInterrupt() {
         handler.removeCallbacksAndMessages(null);
         automationScheduled = false;
+        waitingForConfirmation = false;
+        Prefs.clearPendingKill(this);
+        StopHistory.record(this, "Interrupted");
     }
 
     @Override
     public boolean onUnbind(Intent intent) {
         connected = false;
+        Prefs.markNoForegroundTarget(this);
         requestTileRefresh(true);
         return super.onUnbind(intent);
     }
@@ -111,16 +141,19 @@ public class KillAccessibilityService extends AccessibilityService {
     @Override
     public void onDestroy() {
         connected = false;
+        Prefs.markNoForegroundTarget(this);
+        handler.removeCallbacksAndMessages(null);
         requestTileRefresh(true);
         super.onDestroy();
     }
 
     private void trackForegroundPackage(String packageName) {
-        if ("com.android.systemui".equals(packageName)) {
-            return; // Notification shade must preserve the app underneath it.
+        if ("com.android.systemui".equals(packageName)
+                || TargetResolver.isInputMethodTarget(this, packageName)) {
+            return; // Quick Settings and keyboards must preserve the app underneath.
         }
 
-        if (packageName.equals(getPackageName()) || isSettingsPackage(packageName) || isHomePackage(packageName)) {
+        if (TargetResolver.isUnsafeTarget(this, packageName) || isSettingsPackage(packageName) || isHomePackage(packageName)) {
             Prefs.markNoForegroundTarget(this);
             requestTileRefresh(false);
             return;
@@ -154,8 +187,8 @@ public class KillAccessibilityService extends AccessibilityService {
         long requestAt = Prefs.getPendingAt(this);
         if (target == null || requestAt == 0L) return;
 
-        if (System.currentTimeMillis() - requestAt > REQUEST_TIMEOUT_MS) {
-            failAutomation();
+        if (StopPolicy.isExpired(requestAt, System.currentTimeMillis(), REQUEST_TIMEOUT_MS)) {
+            failAutomation("Timed out");
             return;
         }
 
@@ -165,12 +198,23 @@ public class KillAccessibilityService extends AccessibilityService {
         }
 
         AccessibilityNodeInfo root = getRootInActiveWindow();
-        if (root == null) {
+        if (root == null || root.getPackageName() == null) {
+            retry(attempt);
+            return;
+        }
+        // Never click a similarly named control in the user's app or another window.
+        String activePackage = root.getPackageName().toString();
+        if (!isSettingsPackage(activePackage) && !"android".equals(activePackage)) {
             retry(attempt);
             return;
         }
 
         if (!waitingForConfirmation) {
+            // A system dialog is only expected *after* pressing Force stop.
+            if (!isSettingsPackage(activePackage)) {
+                retry(attempt);
+                return;
+            }
             AccessibilityNodeInfo forceStop = findForceStopButton(root);
             if (forceStop == null) {
                 retry(attempt);
@@ -178,7 +222,7 @@ public class KillAccessibilityService extends AccessibilityService {
             }
 
             if (!forceStop.isEnabled()) {
-                finishAutomation();
+                finishAutomation("Force stop unavailable");
                 return;
             }
 
@@ -194,13 +238,14 @@ public class KillAccessibilityService extends AccessibilityService {
 
         AccessibilityNodeInfo confirm = findConfirmationButton(root);
         if (confirm != null && confirm.isEnabled() && clickNode(confirm)) {
-            finishAutomation();
+            // Clicking the confirmation is not proof that Android stopped the app.
+            finishAutomation("Force stop requested");
             return;
         }
 
         AccessibilityNodeInfo forceStop = findForceStopButton(root);
         if (forceStop != null && !forceStop.isEnabled()) {
-            finishAutomation();
+            finishAutomation("Force stop unavailable");
             return;
         }
 
@@ -209,7 +254,7 @@ public class KillAccessibilityService extends AccessibilityService {
 
     private void retry(int attempt) {
         if (attempt >= MAX_RETRIES) {
-            failAutomation();
+            failAutomation("Controls not found");
             return;
         }
         automationScheduled = true;
@@ -219,23 +264,31 @@ public class KillAccessibilityService extends AccessibilityService {
         }, RETRY_DELAY_MS);
     }
 
-    private void finishAutomation() {
-        Prefs.clearPendingKill(this);
-        Prefs.markNoForegroundTarget(this);
-        waitingForConfirmation = false;
-        activeRequestAt = -1L;
-        requestTileRefresh(true);
-        handler.postDelayed(() -> performGlobalAction(GLOBAL_ACTION_BACK), 220L);
+    private void finishAutomation(String result) {
+        finishRequest(result, false);
     }
 
-    private void failAutomation() {
+    private void failAutomation(String reason) {
+        finishRequest(reason, true);
+    }
+
+    private void finishRequest(String result, boolean failed) {
         Prefs.clearPendingKill(this);
         Prefs.markNoForegroundTarget(this);
         waitingForConfirmation = false;
         activeRequestAt = -1L;
+        StopHistory.record(this, result);
         requestTileRefresh(true);
-        Toast.makeText(this, R.string.kill_failed, Toast.LENGTH_SHORT).show();
-        handler.postDelayed(() -> performGlobalAction(GLOBAL_ACTION_BACK), 150L);
+        if (failed) Toast.makeText(this, R.string.kill_failed, Toast.LENGTH_SHORT).show();
+        // The user may switch screens while the system dialog closes. Do not
+        // issue a global Back into their new foreground application.
+        handler.postDelayed(() -> {
+            AccessibilityNodeInfo root = getRootInActiveWindow();
+            if (root != null && root.getPackageName() != null
+                    && isSettingsPackage(root.getPackageName().toString())) {
+                performGlobalAction(GLOBAL_ACTION_BACK);
+            }
+        }, 220L);
     }
 
     private AccessibilityNodeInfo findForceStopButton(AccessibilityNodeInfo root) {
@@ -286,7 +339,8 @@ public class KillAccessibilityService extends AccessibilityService {
         while (!queue.isEmpty()) {
             AccessibilityNodeInfo node = queue.removeFirst();
             String id = node.getViewIdResourceName();
-            if (id != null && id.toLowerCase(Locale.ROOT).contains(wanted) && node.isVisibleToUser()) {
+            if (id != null && id.toLowerCase(Locale.ROOT).contains(wanted) && node.isVisibleToUser()
+                    && node.isEnabled()) {
                 return node;
             }
             for (int i = 0; i < node.getChildCount(); i++) {
@@ -306,14 +360,14 @@ public class KillAccessibilityService extends AccessibilityService {
             CharSequence text = node.getText();
             if (text != null) {
                 String value = normalize(text.toString());
-                if ((value.equals(wanted) || value.contains(wanted)) && node.isVisibleToUser()) {
+                if (value.equals(wanted) && node.isVisibleToUser() && node.isEnabled()) {
                     return node;
                 }
             }
             CharSequence description = node.getContentDescription();
             if (description != null) {
                 String value = normalize(description.toString());
-                if ((value.equals(wanted) || value.contains(wanted)) && node.isVisibleToUser()) {
+                if (value.equals(wanted) && node.isVisibleToUser() && node.isEnabled()) {
                     return node;
                 }
             }
@@ -351,7 +405,8 @@ public class KillAccessibilityService extends AccessibilityService {
         if (homePackages.isEmpty()) refreshHomePackages();
         if (homePackages.contains(packageName)) return true;
         String lower = packageName.toLowerCase(Locale.ROOT);
-        return lower.contains("launcher") && !lower.contains("settings");
+        return (lower.contains("launcher") || lower.contains("quickstep") || lower.contains("trebuchet"))
+                && !lower.contains("settings");
     }
 
     private void refreshHomePackages() {
