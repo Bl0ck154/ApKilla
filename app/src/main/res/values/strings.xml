@@ -20,6 +20,9 @@
     <string name="status_checking">Checking…</string>
     <string name="status_last_action">Last action</string>
     <string name="status_no_operations">No operations yet</string>
+    <string name="action_copy_diagnostics">Copy diagnostics</string>
+    <string name="action_copy_diagnostics_desc">Copy local operation results and device version for a bug report.</string>
+    <string name="diagnostics_copied">Diagnostics copied. Review before sharing.</string>
     <string name="service_not_connected">Automation is enabled but not connected. Open ApKilla and check Accessibility.</string>
     <string name="kill_in_progress">A force-stop request is already running.</string>
     <string name="status_on">On</string>

@@ -16,6 +16,8 @@ The system's App info screen and confirmation dialog differ between Android vers
 - App version and where the process stopped (App info, dialog, return, or no action).
 - The exact Last action message and reproducible steps.
 
+Use **Copy diagnostics** in ApKilla to get a local history of operation statuses. It does not include package names or screen contents. Review the copied text before sharing.
+
 Never upload a full accessibility screen dump containing private messages, account data, or other sensitive content.
 
 ## The app says "Force stop requested" but nothing changed

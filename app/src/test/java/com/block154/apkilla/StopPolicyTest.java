@@ -11,6 +11,14 @@ public class StopPolicyTest {
         assertFalse(StopPolicy.isExpired(100, 199, 100));
     }
 
+    @Test public void activeKeyboardIsNotAnAppTarget() {
+        assertTrue(StopPolicy.isInputMethodPackage(
+                "com.example.keyboard", "com.example.keyboard/.ImeService"));
+        assertFalse(StopPolicy.isInputMethodPackage(
+                "com.example.app", "com.example.keyboard/.ImeService"));
+        assertFalse(StopPolicy.isInputMethodPackage("com.example.app", null));
+    }
+
     @Test public void onlyLiveForegroundTargetsAreAccepted() {
         assertTrue(StopPolicy.isUsableTarget(true, true, false));
         assertFalse(StopPolicy.isUsableTarget(false, true, false));

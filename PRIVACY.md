@@ -13,6 +13,8 @@ ApKilla observes foreground window events to identify the app to stop. When you 
 - The Quick Settings tile's setup state.
 - A bounded local history of up to 20 operation outcomes and timestamps, without app names or screen contents.
 
+When you explicitly tap **Copy diagnostics**, the app copies device/version metadata and operation outcomes to the system clipboard; you decide whether to share it.
+
 Data is stored using Android private app preferences. App backup is disabled. ApKilla does not transmit these records. Uninstalling the app removes its local preferences according to Android's app-data handling.
 
 ## Contact

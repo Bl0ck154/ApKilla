@@ -40,7 +40,7 @@ The automation intentionally avoids system UI, launchers, Settings, and ApKilla 
 - Some protected/system apps cannot be stopped through Android Settings.
 - A tap on a confirmation control is not proof that the process stopped. If the app stays active, report your device and Android version.
 
-See [Troubleshooting](TROUBLESHOOTING.md) and [Compatibility](COMPATIBILITY.md).
+See [Troubleshooting](TROUBLESHOOTING.md) and [Compatibility](COMPATIBILITY.md). You can use **Copy diagnostics** in ApKilla to copy a local, app-name-free operation history into a bug report.
 
 ## Privacy
 

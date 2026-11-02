@@ -38,14 +38,20 @@ public class KillAccessibilityService extends AccessibilityService {
             "принудительно остановить",
             "остановить",
             "priverstinai sustabdyti",
-            "wymuś zatrzymanie"
+            "wymuś zatrzymanie",
+            "stopp erzwingen", "beenden erzwingen",
+            "forzar detención", "forzar parada",
+            "forcer l'arrêt", "forçar paragem", "forçar parada"
     );
 
     private static final List<String> CONFIRM_TEXTS = Arrays.asList(
             "ok", "okay", "yes", "так", "да",
             "force stop", "примусово зупинити", "зупинити",
             "принудительно остановить", "остановить",
-            "priverstinai sustabdyti", "wymuś zatrzymanie"
+            "priverstinai sustabdyti", "wymuś zatrzymanie",
+            "stopp erzwingen", "beenden erzwingen",
+            "forzar detención", "forzar parada", "forcer l'arrêt",
+            "forçar paragem", "forçar parada"
     );
 
     static boolean isConnected() {
@@ -102,6 +108,16 @@ public class KillAccessibilityService extends AccessibilityService {
             return;
         }
 
+        // WINDOW changes may describe IME/overlay windows rather than the app.
+        // Prefer the actual active root when it belongs to a normal activity.
+        AccessibilityNodeInfo activeRoot = getRootInActiveWindow();
+        if (activeRoot != null && activeRoot.getPackageName() != null) {
+            String activePackage = activeRoot.getPackageName().toString();
+            if (!"com.android.systemui".equals(activePackage) &&
+                    !TargetResolver.isInputMethodTarget(this, activePackage)) {
+                packageName = activePackage;
+            }
+        }
         trackForegroundPackage(packageName);
     }
 
@@ -132,8 +148,9 @@ public class KillAccessibilityService extends AccessibilityService {
     }
 
     private void trackForegroundPackage(String packageName) {
-        if ("com.android.systemui".equals(packageName)) {
-            return; // Notification shade must preserve the app underneath it.
+        if ("com.android.systemui".equals(packageName)
+                || TargetResolver.isInputMethodTarget(this, packageName)) {
+            return; // Quick Settings and keyboards must preserve the app underneath.
         }
 
         if (TargetResolver.isUnsafeTarget(this, packageName) || isSettingsPackage(packageName) || isHomePackage(packageName)) {
